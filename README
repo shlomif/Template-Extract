@@ -1,5 +1,5 @@
 # $File: //member/autrijus/Template-Extract/README $ $Author: autrijus $
-# $Revision: #2 $ $Change: 9292 $ $DateTime: 2003/12/13 01:55:15 $
+# $Revision: #3 $ $Change: 9564 $ $DateTime: 2004/01/03 08:54:59 $
 
 This is the README file for Template::Extract, a module for extracting
 data structure from TT2-rendered documents, effectively reversing the
@@ -18,17 +18,18 @@ make			# or 'nmake' on Windows
 make test
 make install
 
-If you have Module::Build installed, this will also work:
+If you have Module::Build installed, this also works:
 
 cpansign -v		# optional; see SIGNATURE for details
 perl Build.PL
-./Build			# or 'perl Build' on Windows; ditto below
+./Build			# or 'perl Build' on Windows
 ./Build test
 ./Build install
 
 * Copyright
 
-Copyright 2001, 2002, 2003 by Autrijus Tang <autrijus@autrijus.org>.
+Copyright 2001, 2002, 2003, 2004
+by Autrijus Tang <autrijus@autrijus.org>.
 
 All rights reserved.  You can redistribute and/or modify
 this bundle under the same terms as Perl itself.

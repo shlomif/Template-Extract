@@ -1,8 +1,8 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #16 $ $Change: 9296 $ $DateTime: 2003/12/13 12:34:48 $ vim: expandtab shiftwidth=4
+# $Revision: #18 $ $Change: 9564 $ $DateTime: 2004/01/03 08:54:59 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.33';
+$Template::Extract::VERSION = '0.34';
 
 use 5.006;
 use strict;
@@ -17,8 +17,8 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.33 of Template::Extract, released
-December 13, 2003.
+This document describes version 0.34 of Template::Extract, released
+January 3, 2004.
 
 =head1 SYNOPSIS
 
@@ -52,9 +52,6 @@ extraction functionality.  It can take a rendered document and its template
 together, and get the original data structure back, effectively reversing
 the C<process> function.
 
-If you just wish to extract RSS-like information from HTML documents,
-B<WWW::SherlockSearch> may be a more flexible solution.
-
 =head1 METHODS
 
 =head2 extract($template, $document, \%values)
@@ -67,14 +64,19 @@ The return value is C<\%values> upon success, and C<undef> on failure.
 If C<\%values> is omitted from the argument list, a new hash reference
 will be constructed and returned.
 
-Extraction is done by transforming the result from I<Template::Parser>
-to a highly esoteric regular expression, which utilizes the (?{...}) 
+Extraction is done by transforming the result from B<Template::Parser>
+to a highly esoteric regular expression, which utilizes the C<(?{...})>
 construct to insert matched parameters into the hash reference.
 
-The special C<[% ... %]> directive is taken as C</.*?/s> in regex terms,
-i.e. "ignore everything (as short as possible) between this identifier
-and the next one".  For backward compatibility, C<[% _ %]> and C<[% __ %]>
+The special C<[% ... %]> directive is taken as the C</.*?/s> regex, i.e.
+I<ignore everything (as short as possible) between this identifier and
+the next one>.  For backward compatibility, C<[% _ %]> and C<[% __ %]>
 are also accepted.
+
+The special C<[% // %]> directive is taken as a non-capturing regex,
+embedded inside C</(?:)/s>; for example, C<[% /\d*/ %]> matches any
+number of digits.  Capturing parentheses may not be used with this
+directive.
 
 You may set C<$Template::Extract::DEBUG> to a true value to display
 generated regular expressions.
@@ -85,7 +87,7 @@ a true value.
 
 =head1 CAVEATS
 
-Currently, the C<extract> method only handles C<[% GET %]>,
+Currently, the C<extract> method only supports C<[% GET %]>,
 C<[% SET %]> and C<[% FOREACH %]> directives, because C<[% WHILE %]>,
 C<[% CALL %]> and C<[% SWITCH %]> blocks are next to impossible to
 extract correctly.
@@ -126,12 +128,13 @@ sub extract {
 	$parser->{FACTORY} = ref($self);
 	$template = $$template if UNIVERSAL::isa( $template, 'SCALAR' );
 	$template =~ s/\n+$//;
-	$template =~ s/\[%\s*(?:\.\.\.|_)\s*%\]/[% __ %]/g;
+	$template =~ s/\[%\s*(?:\.\.\.|_|__)\s*%\]/[% \/.*?\/ %]/g;
+	$template =~ s/\[%\s*(\/.*?\/)\s*%\]/'[% "' . quotemeta($1) . '" %]'/eg;
 
 	$self->{regex} = $parser->parse($template)->{BLOCK};
     }
 
-    defined($document)        or return undef;
+    defined( $document )      or return undef;
     defined( $self->{regex} ) or return undef;
 
     {
@@ -154,7 +157,7 @@ sub _enter_loop {
     $cur_loop->{pos} = {};
 }
 
-sub _validate {
+sub _leave_loop {
     my ($obj, $key, $vars) = @_;
 
     ref($obj) eq 'HASH' or return;
@@ -270,18 +273,25 @@ sub foreach {
     $regex =~ s/\*\*/, $block_id**/g;
     $regex =~ s/\+\+/*/g;
 
-    return _re("_enter_loop($_[2], $block_id)") .    # sets $cur_loop
-           "(?:$regex)++()" .                        # match content
-           _re("_ext(([[$_[2],[$vars]]], \\'validate', $paren_id)**)");
-           # weed out partial matches
+    return (
+        # sets $cur_loop
+        _re("_enter_loop($_[2], $block_id)") .
+        # match loop content
+        "(?:\\n*?$regex)++()" .
+        # weed out partial matches
+        _re("_ext(([[$_[2],[$vars]]], \\'leave_loop', $paren_id)**)") .
+        # optional, implicit newline
+        "\\n*?"
+    );
 }
 
 sub get {
-    return '.*?' if $_[1] eq "'__'";
+    return "(?:$1)" if $_[1] =~ m{^/(.*)/$};
 
     ++$paren_id;
-    return '(.*?)' .    # ** is the placeholder for parent loop ids
-           _re("_ext(([$_[1]], \$$paren_id, $paren_id)\*\*)");
+
+    # ** is the placeholder for parent loop ids
+    return "(.*?)" . _re("_ext(([$_[1]], \$$paren_id, $paren_id)\*\*)");
 }
 
 sub set {
@@ -289,12 +299,13 @@ sub set {
 
     my $val = $_[1][1];
     $val =~ s/^'(.*)'\z/$1/;
-
     push(@set, $val);
 
-    my $parents = join ',',
-                  map { $_[1][0][ $_ * 2 ] }
-                  ( 0 .. $#{ $_[1][0] } / 2 );
+    my $parents = join(
+        ',', map {
+            $_[1][0][ $_ * 2 ]
+        } ( 0 .. $#{ $_[1][0] } / 2 )
+    );
     return '()' . _re("_ext(([$parents], \\$#set, $paren_id)\*\*)");
 }
 
@@ -304,12 +315,14 @@ sub _ext {
 
     if (@_) {
 	print "Ext: [ $$val with $num on $-[$num]]\n" if ref($val) and $DEBUG;
-	my $cur = $loop{ $_[0] };           # current loop structure
 
+        # fetch current loop structure
+	my $cur = $loop{ $_[0] };
 	# if pos() changed, increment the iteration counter
 	$cur->{var}{$num}++ if ( ( $cur->{pos}{$num} ||= -1 ) != $-[$num] )
-	    or ref $val and $$val eq 'validate';
-	$cur->{pos}{$num} = $-[$num];       # remember pos()
+	    or ref $val and $$val eq 'leave_loop';
+        # remember pos()
+	$cur->{pos}{$num} = $-[$num];
 
 	my $iteration = $cur->{var}{$num} - 1;
 	$obj = _traverse( $data, @_ )->{ $cur->{name} }[$iteration] ||= {};
@@ -320,8 +333,8 @@ sub _ext {
     if (!ref($val)) {
         $obj->{$var} = $val;
     }
-    elsif ($$val eq 'validate') {
-        _validate($obj, @$var);
+    elsif ($$val eq 'leave_loop') {
+        _leave_loop($obj, @$var);
     }
     else {
         $obj->{$var} = $set[$$val];
@@ -388,9 +401,7 @@ sub DESTROY { }
 
 L<Template>, L<Template::Generate>, L<Template::Parser>
 
-L<WWW::SherlockSearch>
-
-Simon Cozens' introduction to this module, in O'Reilly's I<Spidering Hacks>:
+Simon Cozens's introduction to this module, in O'Reilly's I<Spidering Hacks>:
 L<http://www.oreillynet.com/pub/a/javascript/excerpt/spiderhacks_chap01/index.html>
 
 Mark Fowler's introduction to this module, in The 2003 Perl Advent Calendar:
@@ -402,7 +413,8 @@ Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2001, 2002, 2003 by Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>.
+Copyright 2001, 2002, 2003, 2004
+by Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>.
 
 This program is free software; you can redistribute it and/or 
 modify it under the same terms as Perl itself.

@@ -1,6 +1,6 @@
-#line 1 "inc/Module/Install/Base.pm - /usr/local/lib/perl5/site_perl/5.8.0/Module/Install/Base.pm"
+#line 1 "inc/Module/Install/Base.pm - /usr/local/lib/perl5/site_perl/5.8.2/Module/Install/Base.pm"
 # $File: //depot/cpan/Module-Install/lib/Module/Install/Base.pm $ $Author: autrijus $
-# $Revision: #9 $ $Change: 1665 $ $DateTime: 2003/08/18 07:52:47 $ vim: expandtab shiftwidth=4
+# $Revision: #10 $ $Change: 1847 $ $DateTime: 2003/12/31 23:14:54 $ vim: expandtab shiftwidth=4
 
 package Module::Install::Base;
 

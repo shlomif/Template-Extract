@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 # $File: //member/autrijus/Template-Extract/t/1-basic.t $ $Author: autrijus $
-# $Revision: #10 $ $Change: 8521 $ $DateTime: 2003/10/21 22:52:33 $ vim: expandtab shiftwidth=4
+# $Revision: #12 $ $Change: 9564 $ $DateTime: 2004/01/03 08:54:59 $ vim: expandtab shiftwidth=4
 
 use strict;
-use Test::More tests => 12;
+use Test::More tests => 13;
 
 use_ok('Template::Extract');
 
@@ -42,7 +42,29 @@ is_deeply($data, {
         'url'       => 'http://microsoft.com',
         'title'     => 'Where do you want...',
     } ]
-}, 'extract() as documented in synopsis');
+}, 'synopsis');
+
+$template = << '.';
+<!-- BEGIN -->
+[% FOREACH record %]
+<[% /\w/ %]>[% para %]</[% /\w/ %]>
+[% END %]
+<!-- END -->
+.
+
+$document = << '.';
+<!-- BEGIN -->
+<p>hello</p>
+<q>world</q>
+<r>, how are you?</r>
+<!-- END -->
+.
+
+$data = Template::Extract->new->extract($template, $document);
+
+is_deeply($data, {
+    record => [ map { { para => $_ } } 'hello', 'world', ', how are you?' ]
+}, 'implicit newlines with regex tags');
 
 $template = << '.';
 [% FOREACH subject %]
@@ -99,7 +121,7 @@ is_deeply($data, {
             'title'     => 'Where do you want...',
         } ]
     } } qw(Foo Bar)],
-}, 'extract() with two nested and one extra FOREACH');
+}, 'two nested and one extra FOREACH');
 
 $template = << '.';
 _[% C %][% D %]_
@@ -119,7 +141,7 @@ is_deeply($data, {
     'C' => 'doe',
     'D' => 'ray',
     'E' => 'me',
-}, 'extract() with backtracking');
+}, 'backtracking');
 
 my $ext_data = { F => 'fa' };
 $data = Template::Extract->new->extract($template, $document, $ext_data);
@@ -129,9 +151,9 @@ is_deeply($data, {
     'D' => 'ray',
     'E' => 'me',
     'F' => 'fa',
-}, 'extract() with external data');
+}, 'external data');
 
-is_deeply($data, $ext_data, 'extract() should return the same data');
+is_deeply($data, $ext_data, 'ext_data should be the same as data');
 
 $template = << '.';
 [% FOREACH entry %]
@@ -168,7 +190,7 @@ is_deeply($data, {
             'title_text' => 'Title 2',
         } ],
     } ],
-}, 'extract() with two FOREACHs nested inside a FOREACH');
+}, 'two FOREACHs nested inside a FOREACH');
 
 $template = << '.';
 [% FOREACH top %][% FOREACH foo %][% SET bar.x = "set" %]<[% baz.y %]|[% qux.z %]>[% END %][% END %]
@@ -188,18 +210,18 @@ is_deeply($data, { top => [{ foo => [{
     bar => { x => 'set' },
     baz => { y => 'test2' },
     qux => { z => '2' },
-}] }] }, 'extract() with SET directive inside two FOREACHs');
+}] }] }, 'SET directive inside two FOREACHs');
 
 $template = "[% FOREACH item %]hello [% foo %]<br>[% END %]";
 $document = " hello name<br>";
 
 $data = Template::Extract->new->extract($template, $document);
 
-is_deeply($data, { item => [ { foo => 'name' } ] }, 'extract() with extra prepended data');
+is_deeply($data, { item => [ { foo => 'name' } ] }, 'extra prepended data');
 
 $Template::Extract::EXACT =
 $Template::Extract::EXACT = 1;
 $data = Template::Extract->new->extract($template, $document);
 
-is($data, undef, 'extract() fails with a partial match when $EXACT == 1');
+is($data, undef, 'partial match when $EXACT == 1 should fail');
 

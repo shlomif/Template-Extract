@@ -1,11 +1,11 @@
-#line 1 "inc/Module/Install/Metadata.pm - /usr/local/lib/perl5/site_perl/5.8.0/Module/Install/Metadata.pm"
+#line 1 "inc/Module/Install/Metadata.pm - /usr/local/lib/perl5/site_perl/5.8.2/Module/Install/Metadata.pm"
 # $File: //depot/cpan/Module-Install/lib/Module/Install/Metadata.pm $ $Author: autrijus $
-# $Revision: #28 $ $Change: 1781 $ $DateTime: 2003/10/22 17:14:03 $ vim: expandtab shiftwidth=4
+# $Revision: #31 $ $Change: 1817 $ $DateTime: 2003/12/14 20:57:39 $ vim: expandtab shiftwidth=4
 
 package Module::Install::Metadata;
 use Module::Install::Base; @ISA = qw(Module::Install::Base);
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 use strict 'vars';
 use vars qw($VERSION);
@@ -14,7 +14,7 @@ sub Meta { shift }
 
 my @scalar_keys = qw(
     name module_name version abstract author license
-    distribution_type sign
+    distribution_type sign perl_version
 );
 my @tuple_keys  = qw(build_requires requires recommends bundles);
 
@@ -35,6 +35,12 @@ foreach my $key (@tuple_keys) {
         while (@_) {
             my $module  = shift or last;
             my $version = shift || 0;
+            if ($module eq 'perl') {
+                $version =~ s{^(\d+)\.(\d+)\.(\d+)}
+                             {$1 + $2/1_000 + $3/1_000_000}e;
+                $self->perl_version($version);
+                next;
+            }
             my $rv = [$module, $version];
             push @{$self->{'values'}{$key}}, $rv;
             push @rv, $rv;
@@ -68,6 +74,18 @@ sub _dump {
     my %values = %{$self->{'values'}};
 
     delete $values{sign};
+    if (my $perl_version = delete $values{perl_version}) {
+        # Always canonical to three-dot version 
+        $perl_version =~ s{^(\d+)\.(\d\d\d)(\d*)}{join('.', $1, int($2), int($3))}e
+            if $perl_version >= 5.006;
+        $values{requires} = [
+            [perl => $perl_version],
+            @{$values{requires}||[]},
+        ];
+    }
+
+    warn "No license specified, setting license = 'unknown'\n"
+        unless $values{license};
 
     $values{license} ||= 'unknown';
     $values{distribution_type} ||= 'module';
@@ -94,14 +112,10 @@ sub _dump {
         require YAML;
         local $YAML::UseHeader = 0;
         $dump .= YAML::Dump({ no_index => $no_index});
-        $dump .= YAML::Dump({ private => $no_index});
     }
     else {
         $dump .= << "META";
 no_index:
-  directory:
-    - inc
-private:
   directory:
     - inc
 META
