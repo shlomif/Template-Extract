@@ -1,6 +1,6 @@
 name: Template-Extract
-version: 0.36
-abstract: Extract data structure from TT2-rendered documents
+version: 0.37
+abstract: Use TT2 syntax to extract data from documents
 author: Autrijus Tang <autrijus@autrijus.org>
 license: perl
 distribution_type: module
@@ -12,4 +12,4 @@ requires:
 no_index:
   directory:
     - inc
-generated_by: Module::Install version 0.31
+generated_by: Module::Install version 0.35

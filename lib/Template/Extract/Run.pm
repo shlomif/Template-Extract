@@ -1,8 +1,5 @@
-# $File: //member/autrijus/Template-Extract/lib/Template/Extract/Run.pm $ $Author: autrijus $
-# $Revision: #1 $ $Change: 10075 $ $DateTime: 2004/02/16 16:50:48 $
-
 package Template::Extract::Run; 
-$Template::Extract::Run::VERSION = '0.36';
+$Template::Extract::Run::VERSION = '0.37';
 
 use 5.006;
 use strict;

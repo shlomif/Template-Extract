@@ -1,9 +1,6 @@
 #!/usr/bin/perl
-# $File: //member/autrijus/Template-Extract/t/1-basic.t $ $Author: autrijus $
-# $Revision: #13 $ $Change: 10075 $ $DateTime: 2004/02/16 16:50:48 $ vim: expandtab shiftwidth=4
-
 use strict;
-use Test::More tests => 12;
+use Test::More tests => 13;
 
 use_ok('Template::Extract');
 
@@ -218,9 +215,16 @@ $data = Template::Extract->new->extract($template, $document);
 
 is_deeply($data, { item => [ { foo => 'name' } ] }, 'extra prepended data');
 
-$Template::Extract::EXACT =
 $Template::Extract::EXACT = 1;
 $data = Template::Extract->new->extract($template, $document);
 
 is($data, undef, 'partial match when $EXACT == 1 should fail');
 
+$Template::Extract::EXACT = 0;
+
+$template = '[% year %]-[% month %]-[% day %]';
+$document = '2004-12-17';
+
+$data = Template::Extract->new->extract($template, $document);
+
+is_deeply($data, { year => 2004, month => 12, day => 17 }, 'trailing match');

@@ -1,7 +1,4 @@
 #!/usr/bin/perl
-# $File: //member/autrijus/Template-Extract/t/0-signature.t $ $Author: autrijus $
-# $Revision: #2 $ $Change: 8515 $ $DateTime: 2003/10/21 07:02:06 $
-
 use strict;
 print "1..1\n";
 

@@ -1,8 +1,5 @@
-# $File: //member/autrijus/Template-Extract/lib/Template/Extract/Compile.pm $ $Author: autrijus $
-# $Revision: #1 $ $Change: 10075 $ $DateTime: 2004/02/16 16:50:48 $
-
 package Template::Extract::Compile;
-$Template::Extract::Compile::VERSION = '0.36';
+$Template::Extract::Compile::VERSION = '0.37';
 
 use 5.006;
 use strict;
@@ -115,14 +112,15 @@ sub template {
             \)                          #     ...end capturing handler
             \s*                         #     whitespaces
         \}\)                            #   ...end post-maching regex
+        (\z)?                           # is it the end? [5]
     )}{
-        if ($seen{$2,$4}) {             # if var reoccured in the same loop
-            "(\\$seen{$2,$4})"          #   replace it with backtracker
-        } else {                        # otherwise
-            $seen{$2,$4} = $3;          #   register this var's counter
-            $1;                         #   and preserve the sequence 
-        }
+        ($seen{$2,$4})                  # if var reoccured in the same loop
+            ? "(\\$seen{$2,$4})" :      #   replace it with backtracker
+        ( ($seen{$2,$4} = $3), $+[5] )  # otherwise, if it is the end
+            ? '(.*)' . substr( $1, 5 )  #   make it greedy
+            : $1                        # otherwise, preserve the sequence 
     }gex;
+
     return $regex;
 }
 
@@ -219,7 +217,7 @@ sub AUTOLOAD {
     $DEBUG or return;
 
     require Data::Dumper;
-    $Data::Dumper::Indent = 1;
+    $Data::Dumper::Indent = $Data::Dumper::Indent = 1;
 
     our $AUTOLOAD;
     print "\n$AUTOLOAD -";

@@ -1,8 +1,5 @@
-# $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #20 $ $Change: 10075 $ $DateTime: 2004/02/16 16:50:48 $ vim: expandtab shiftwidth=4
-
 package Template::Extract;
-$Template::Extract::VERSION = '0.36';
+$Template::Extract::VERSION = '0.37';
 
 use 5.006;
 use strict;
@@ -14,12 +11,12 @@ our ( $DEBUG, $EXACT );
 
 =head1 NAME
 
-Template::Extract - Extract data structure from TT2-rendered documents
+Template::Extract - Use TT2 syntax to extract data from documents
 
 =head1 VERSION
 
-This document describes version 0.36 of Template::Extract, released
-February 17, 2004.
+This document describes version 0.37 of Template::Extract, released
+October 20, 2004.
 
 =head1 SYNOPSIS
 

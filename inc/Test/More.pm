@@ -1,4 +1,4 @@
-#line 1 "inc/Test/More.pm - /usr/local/lib/perl5/site_perl/5.8.3/Test/More.pm"
+#line 1 "inc/Test/More.pm - /usr/local/lib/perl5/5.8.5/Test/More.pm"
 package Test::More;
 
 use 5.004;
@@ -19,7 +19,7 @@ sub _carp {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
-$VERSION = '0.47';
+$VERSION = '0.49';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like unlike is_deeply
@@ -34,6 +34,7 @@ $VERSION = '0.47';
             );
 
 my $Test = Test::Builder->new;
+my $Show_Diag = 1;
 
 
 # 5.004's Exporter doesn't have export_to_level.
@@ -47,7 +48,7 @@ sub _export_to_level
 }
 
 
-#line 172
+#line 176
 
 sub plan {
     my(@plan) = @_;
@@ -56,16 +57,25 @@ sub plan {
 
     $Test->exported_to($caller);
 
+    my @cleaned_plan;
     my @imports = ();
-    foreach my $idx (0..$#plan) {
+    my $idx = 0;
+    while( $idx <= $#plan ) {
         if( $plan[$idx] eq 'import' ) {
-            my($tag, $imports) = splice @plan, $idx, 2;
-            @imports = @$imports;
-            last;
+            @imports = @{$plan[$idx+1]};
+            $idx += 2;
+        }
+        elsif( $plan[$idx] eq 'no_diag' ) {
+            $Show_Diag = 0;
+            $idx++;
+        }
+        else {
+            push @cleaned_plan, $plan[$idx];
+            $idx++;
         }
     }
 
-    $Test->plan(@plan);
+    $Test->plan(@cleaned_plan);
 
     __PACKAGE__->_export_to_level(1, __PACKAGE__, @imports);
 }
@@ -76,14 +86,14 @@ sub import {
 }
 
 
-#line 266
+#line 279
 
 sub ok ($;$) {
     my($test, $name) = @_;
     $Test->ok($test, $name);
 }
 
-#line 330
+#line 343
 
 sub is ($$;$) {
     $Test->is_eq(@_);
@@ -96,28 +106,28 @@ sub isnt ($$;$) {
 *isn't = \&isnt;
 
 
-#line 371
+#line 384
 
 sub like ($$;$) {
     $Test->like(@_);
 }
 
 
-#line 385
+#line 398
 
-sub unlike {
+sub unlike ($$;$) {
     $Test->unlike(@_);
 }
 
 
-#line 423
+#line 436
 
 sub cmp_ok($$$;$) {
     $Test->cmp_ok(@_);
 }
 
 
-#line 457
+#line 470
 
 sub can_ok ($@) {
     my($proto, @methods) = @_;
@@ -147,7 +157,7 @@ sub can_ok ($@) {
     return $ok;
 }
 
-#line 514
+#line 527
 
 sub isa_ok ($$;$) {
     my($object, $class, $obj_name) = @_;
@@ -201,7 +211,7 @@ WHOA
 }
 
 
-#line 583
+#line 596
 
 sub pass (;$) {
     $Test->ok(1, @_);
@@ -211,32 +221,45 @@ sub fail (;$) {
     $Test->ok(0, @_);
 }
 
-#line 627
+#line 646
 
 sub diag {
+    return unless $Show_Diag;
     $Test->diag(@_);
 }
 
 
-#line 677
+#line 702
 
 sub use_ok ($;@) {
     my($module, @imports) = @_;
     @imports = () unless @imports;
 
-    my $pack = caller;
+    my($pack,$filename,$line) = caller;
 
     local($@,$!);   # eval sometimes interferes with $!
-    eval <<USE;
+
+    if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
+        # probably a version check.  Perl needs to see the bare number
+        # for it to work with non-Exporter based modules.
+        eval <<USE;
 package $pack;
-require $module;
-'$module'->import(\@imports);
+use $module $imports[0];
 USE
+    }
+    else {
+        eval <<USE;
+package $pack;
+use $module \@imports;
+USE
+    }
 
     my $ok = $Test->ok( !$@, "use $module;" );
 
     unless( $ok ) {
         chomp $@;
+        $@ =~ s{^BEGIN failed--compilation aborted at .*$}
+                {BEGIN failed--compilation aborted at $filename line $line.}m;
         $Test->diag(<<DIAGNOSTIC);
     Tried to use '$module'.
     Error:  $@
@@ -247,7 +270,7 @@ DIAGNOSTIC
     return $ok;
 }
 
-#line 712
+#line 749
 
 sub require_ok ($) {
     my($module) = shift;
@@ -274,7 +297,7 @@ DIAGNOSTIC
     return $ok;
 }
 
-#line 796
+#line 833
 
 #'#
 sub skip {
@@ -296,7 +319,7 @@ sub skip {
 }
 
 
-#line 874
+#line 914
 
 sub todo_skip {
     my($why, $how_many) = @_;
@@ -316,11 +339,22 @@ sub todo_skip {
     last TODO;
 }
 
-#line 933
+#line 971
 
 use vars qw(@Data_Stack);
 my $DNE = bless [], 'Does::Not::Exist';
 sub is_deeply {
+    unless( @_ == 2 or @_ == 3 ) {
+        my $msg = <<WARNING;
+is_deeply() takes two or three args, you gave %d.
+This usually means you passed an array or hash instead 
+of a reference to it
+WARNING
+        chop $msg;   # clip off newline so carp() will put in line/file
+
+        _carp sprintf $msg, scalar @_;
+    }
+
     my($this, $that, $name) = @_;
 
     my $ok;
@@ -383,7 +417,7 @@ sub _format_stack {
 }
 
 
-#line 1007
+#line 1056
 
 #'#
 sub eq_array  {
@@ -452,7 +486,7 @@ sub _deep_check {
 }
 
 
-#line 1083
+#line 1132
 
 sub eq_hash {
     my($a1, $a2) = @_;
@@ -474,12 +508,12 @@ sub eq_hash {
     return $ok;
 }
 
-#line 1116
+#line 1165
 
 # We must make sure that references are treated neutrally.  It really
 # doesn't matter how we sort them, as long as both arrays are sorted
 # with the same algorithm.
-sub _bogus_sort { local $^W = 0;  ref $a ? 0 : $a cmp $b }
+sub _bogus_sort { local $^W = 0;  ref $a ? -1 : ref $b ? 1 : $a cmp $b }
 
 sub eq_set  {
     my($a1, $a2) = @_;
@@ -489,12 +523,12 @@ sub eq_set  {
     return eq_array( [sort _bogus_sort @$a1], [sort _bogus_sort @$a2] );
 }
 
-#line 1154
+#line 1203
 
 sub builder {
     return Test::Builder->new;
 }
 
-#line 1247
+#line 1329
 
 1;
