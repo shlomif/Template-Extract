@@ -1,8 +1,8 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #7 $ $Change: 7822 $ $DateTime: 2003/09/01 12:53:35 $ vim: expandtab shiftwidth=4
+# $Revision: #8 $ $Change: 7838 $ $DateTime: 2003/09/02 14:09:43 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.22';
+$Template::Extract::VERSION = '0.23';
 
 use 5.006;
 use strict;
@@ -17,8 +17,8 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.22 of Template::Extract, released
-September 1, 2003.
+This document describes version 0.23 of Template::Extract, released
+September 2, 2003.
 
 =head1 SYNOPSIS
 
@@ -58,7 +58,7 @@ may be a more robust solution.
 
 =head1 METHODS
 
-=head2 $obj->extract($template, $document, \%values)
+=head2 extract($template, $document, \%values)
 
 This method takes three arguments: the template string, or a reference to
 it; a document string to match against; and an optional hash reference to
@@ -95,132 +95,133 @@ into related research, please mail any ideas to me.
 
 =cut
 
-my ($params, $cur_loop, %loop);
+my ( $result, $param );
+my ( %loop, $cur_loop, $paren_id, $block_id );
 
 sub extract {
-    my ($self, $template, $document, $ext_param) = @_;
-    my ($output, $error);
+    my ( $self, $template, $document, $ext_param ) = @_;
 
-    if (!defined($self->{regex})) {
-        $self->set_param($ext_param);
-        $params = {};
-        %loop = ();
-        $cur_loop = undef;
+    $self->_set_param($ext_param);
 
-        my $parser = Template::Parser->new({
-            PRE_CHOMP  => 1,
-            POST_CHOMP => 1,
-        });
-    
-        $parser->{ FACTORY } = ref($self);
-        $template = $$template if UNIVERSAL::isa($template, 'SCALAR');
-        $template =~ s/\n+$//;
-        $template =~ s/\[%\s*(?:\.\.\.|_)\s*%\]/[% __ %]/g;
+    if ( defined $template ) {
+	my $parser = Template::Parser->new(
+	    {
+                PRE_CHOMP  => 1,
+		POST_CHOMP => 1,
+	    }
+	);
 
-        $self->{regex} = $parser->parse($template)->{ BLOCK };
+	$parser->{FACTORY} = ref($self);
+	$template = $$template if UNIVERSAL::isa( $template, 'SCALAR' );
+	$template =~ s/\n+$//;
+	$template =~ s/\[%\s*(?:\.\.\.|_)\s*%\]/[% __ %]/g;
+
+	$self->{regex} = $parser->parse($template)->{BLOCK};
     }
 
-    if ($document) {
-        use re 'eval';
-        print "Regex: [\n$self->{regex}\n]\n" if $DEBUG;
-        return $document =~ /$self->{regex}/s ? $params : undef;
-    }
+    defined($document)        or return;
+    defined( $self->{regex} ) or return;
+
+    use re 'eval';
+    print "Regex: [\n$self->{regex}\n]\n" if $DEBUG;
+    return $result if $document =~ /$self->{regex}/s;
+    return;
 }
 
 sub _enter_loop {
-    if ($cur_loop and $cur_loop->{id} == $_[1]) {
-        $cur_loop->{count}++;
-        $cur_loop->{var} = {};
-        $cur_loop->{idx} = {};
+    if ( $cur_loop and $cur_loop->{id} == $_[1] ) {
+	# reiterating a FOREACH loop
+	$cur_loop->{count}++;
+	$cur_loop->{var} = {};
+	$cur_loop->{pos} = {};
+	return;
     }
-    else {
-        $cur_loop = $loop{$_[1]} ||= {
-            name    => $_[0],
-            id      => $_[1],
-            count   => 0,
-            var     => {},
-        };
-    }
+
+    # entering a FOREACH loop for the first time
+    $cur_loop = $loop{ $_[1] } ||= {
+	name  => $_[0],
+	id    => $_[1],
+	count => 0,
+	var   => {},
+	pos   => {},
+    };
 }
 
 sub _validate {
-    return;
     my $vars = shift;
-    my $obj;
+    my $obj  = ( _adjust( $result, @_ ) )[0]->{ $_[0] };
 
-    $obj = (_adjust($params, @_))[0]->{$_[0]};
-    return unless UNIVERSAL::isa($obj, 'ARRAY');
+    UNIVERSAL::isa( $obj, 'ARRAY' ) or return;
 
-    @{$obj} = grep {
-        my $entry = $_;
-        scalar (grep { exists $entry->{$_} } @{$vars}) == scalar @{$vars};
-    } @{$obj};
+    @$obj = grep {
+	my $entry = $_;
+	(grep { exists $entry->{$_} } @$vars ) == @$vars;
+    } @$obj;
 }
 
 sub _set {
-    my ($var, $val, $num) = splice(@_, 0, 3);
-    my $obj;
+    my ( $var, $val, $num ) = splice( @_, 0, 3 );
+    my $obj = $result;
 
     if (@_) {
-        my $cur = $loop{$_[0]};
-        $cur->{var}{$num}++ unless ($cur->{pos}{$num} ||= -1) == $-[$num];
-        $cur->{pos}{$num} = $-[$num];
-        my $index = $cur->{var}{$num} - 1; # the iteration we are currently in
-        $obj = (_traverse($params, @_))[0]->{$cur->{name}}[$index] ||= {};
-    }
-    else {
-        $obj = $params;
+	my $cur = $loop{ $_[0] };           # current loop structure
+
+	# if pos() changed, increment the iteration counter
+	$cur->{var}{$num}++ if ( ( $cur->{pos}{$num} ||= -1 ) != $-[$num] );
+	$cur->{pos}{$num} = $-[$num];       # remember pos()
+
+	my $iteration = $cur->{var}{$num} - 1;
+	$obj = _traverse( $result, @_ )->{ $cur->{name} }[$iteration] ||= {};
     }
 
-    ($obj, $var) = _adjust($obj, @$var);
+    ( $obj, $var ) = _adjust( $obj, @$var );
     $obj->{$var} = $val;
-    return;
 }
 
 sub _adjust {
-    my ($obj, $val) = (shift, pop);
+    my ( $obj, $val ) = ( shift, pop );
 
     foreach my $var (@_) {
-        $obj = $obj->{$var} ||= {};
+	$obj = $obj->{$var} ||= {};
     }
-    return ($obj, $val);
+    return ( $obj, $val );
 }
 
 sub _traverse {
-    my $obj = shift;
-    my $val = shift;
+    my ( $obj, $val ) = ( shift, shift );
 
     my $depth = -1;
-    foreach my $id (reverse @_) {
-        my $var = $loop{$id}{name};
-        my $index = $cur_loop->{count};
-        $obj = $obj->{$var}[$index] ||= {};
+    foreach my $id ( reverse @_ ) {
+	my $var   = $loop{$id}{name};
+	my $index = $cur_loop->{count};
+	$obj = $obj->{$var}[$index] ||= {};
     }
-    return ($obj, $val);
+    return $obj;
 }
 
-# Factory API implementation begins here
-
-my $count      = 0;
-my $ext_param  = {};
-my $last_regex = '';
-my $block_id;
-
-sub set_param { 
-    $ext_param = $_[-1] if defined $_[-1];
+# initialize temporary variables
+sub _set_param {
+    $paren_id = 0;
+    $block_id = 0;
+    $result   = {};
+    %loop     = ();
+    $cur_loop = undef;
+    $param    = $_[1] || {};
 }
+
+# utility function to add regex eval brackets
+sub _re { "(?{\n    @_\n})" }
+
+# --- Factory API implementation begins here ---
 
 sub template {
-    my $reg = $_[1];
+    my $regex = $_[1];
+    $regex =~ s/\*\*//g;
 
-    $count = 0;
-    $block_id = 0;
-    $reg =~ s/\*\*//g;
-
-    # Deal with backtracking here -- substitute repeated occurences of 
+    # Deal with backtracking here -- substitute repeated occurences of
     # the variable into backtracking sequences like (\1)
     my %seen;
-    $reg =~ s{(                         # entire GET sequence [1]
+    $regex =~ s{(                       # entire GET sequence [1]
         \(\.\*\?\)                      #   matching regex
         \(\?\{                          #   post-matching regex...
             \s*                         #     whitespaces
@@ -235,122 +236,102 @@ sub template {
             \s*                         #     whitespaces
         \}\)                            #   ...end post-maching regex
     )}{
-       if ($seen{"$2$4"}) {             # if var reoccured in the same loop
-           "(\\$seen{$2.$4})";          #   replace it with backtracker
-       } else {                         # otherwise
-           $seen{"$2$4"} = $3;          #   register this var's counter
-           $1;                          #   and preserve the GET sequence 
-       }
+        if ($seen{$2,$4}) {             # if var reoccured in the same loop
+            "(\\$seen{$2,$4})"          #   replace it with backtracker
+        } else {                        # otherwise
+            $seen{$2,$4} = $3;          #   register this var's counter
+            $1;                         #   and preserve the GET sequence 
+        }
     }gex;
-    return $reg;
+    return $regex;
 }
 
-sub block {
-    return join('', @{ $_[1] || [] });
-}
+sub foreach {
+    my $regex = $_[4];
 
-sub ident {
-    return join(',', map {$_[1][$_ * 2]} (0 .. int($#{$_[1]}) / 2));
+    # find out immediate SET childrens
+    my %vars;
+    $vars{$_}++ for ( $regex =~ /_set\(\(\[('\w+').*?\], \$\^N, \d+\)\*\*/g );
+    my $vars = join( ', ', sort keys %vars );
+
+    # append this block's id into the _set calling chain
+    ++$block_id;
+    $regex =~ s/\*\*/, $block_id\*\*/g;
+
+    return _re("_enter_loop($_[2], $block_id)") .   # sets $cur_loop
+      "(?:$regex)*" .                               # match content
+      _re("_validate([$vars], $_[2])");             # weed out partial matches
 }
 
 sub get {
-    my $rv = $last_regex . '.*?';
-    if ($_[1] eq "'__'") {
-        $last_regex = '';
-    }
-    else {
-        ++$count; # which capturing parenthesis is this?
-        # ** is the placeholder for parent tree in foreach() 
-        $rv = $last_regex . "(.*?)";
-        $last_regex = ($] >= 5.007002)
-            ? _re("_set(([$_[1]], \$^N, $count)\*\*)")
-            : _re("_set(([$_[1]], \$$count, $count)\*\*)");
-    }
-    return $rv;
+    return '.*?' if $_[1] eq "'__'";
+
+    ++$paren_id;
+    return '(.*?)' .    # ** is the placeholder for parent loop ids
+           _re("_set(([$_[1]], \$$paren_id, $paren_id)\*\*)");
 }
 
 sub set {
-    return unless defined $ext_param;
-
-    my @parents = map {$_[1][0][$_ * 2]} (0 .. $#{$_[1][0]} / 2);
-    my $val = $_[1][1];
-    my ($obj, $var);
-    
-    $_ = substr($_, 1, -1) foreach @parents;
-
-    ($obj, $var) = _adjust($ext_param, @parents);
-    $obj->{$var} = $val;
-    
+    my @parents = map { substr( $_, 1, -1 ) }
+                  map { $_[1][0][ $_ * 2 ] }
+                  ( 0 .. $#{ $_[1][0] } / 2 );
+    my ( $obj, $var ) = _adjust( $param, @parents );
+    $obj->{$var} = $_[1][1];
     return '';
 }
 
 sub textblock {
-    my $ret = $last_regex . quotemeta($_[1]);
-    $last_regex = '';
-    return $ret;
+    return quotemeta( $_[1] );
 }
 
-sub foreach {
-    my $reg = $_[4];
+sub block {
+    return join( '', @{ $_[1] || [] } );
+}
 
-    # find out immediate SET childrens
-    my %vars;
-    $vars{$1}++ while $reg =~ m/_set\(\(\[('\w+')[^\]]*\], \$\^N, \d+\)\*\*/g;
-    my $vars = join(', ', sort keys %vars);
+sub quoted {
+    my $output = '';
 
-    # append this block's id into the _set calling chain
-    $block_id++;
-    $reg =~ s/\*\*/, $block_id\*\*/g;
+    foreach my $token ( @{ $_[1] } ) {
+	if ( $token =~ m/^'(.+)'$/ ) {    # nested hash traversal
+	    $output .= '$';
+	    $output .= "{$_}" foreach split( /','/, $1 );
+	}
+	else {
+	    $output .= $token;
+	}
+    }
+    return $output;
+}
 
-    return _re("_enter_loop($_[2], $block_id)") .   # sets $cur_loop
-           "(?:$reg)*" .                            # match content
-           _re("_validate([$vars], $_[2])")         # weed out partial matches
+sub ident {
+    return join( ',', map { $_[1][ $_ * 2 ] } ( 0 .. $#{ $_[1] } / 2 ) );
 }
 
 sub text {
     return $_[1];
 }
 
-sub quoted {
-    my $output = '';
-
-    foreach my $token (@{$_[1]}) {
-        if ($token =~ m/^'(.+)'$/) { # nested hash traversal
-            $output .= '$';
-            $output .= "{$_}" foreach split(/','/, $1);
-        }
-        else {
-            $output .= $token;
-        }
-    }
-    return $output;
-}
-
-# handy method to add regex eval brackets
-sub _re { "(?{\n    @_\n})" }
-
-our $AUTOLOAD;
-
+# debug routine to catch unsupported directives
 sub AUTOLOAD {
-    return unless $DEBUG;
+    $DEBUG or return;
 
     require Data::Dumper;
     $Data::Dumper::Indent = 1;
 
-    my $output = "\n$AUTOLOAD -";
+    our $AUTOLOAD;
+    print "\n$AUTOLOAD -";
 
-    for my $arg (1..$#_) {
-        $output .= "\n    [$arg]: ";
-        $output .= ref($_[$arg]) 
-            ? Data::Dumper->Dump([$_[$arg]], ['__']) 
-            : $_[$arg];
+    for my $arg ( 1 .. $#_ ) {
+	print "\n    [$arg]: ";
+	print ref( $_[$arg] )
+	  ? Data::Dumper->Dump( [ $_[$arg] ], ['__'] )
+	  : $_[$arg];
     }
 
-    print $output;
     return '';
 }
 
-sub DESTROY {}
+sub DESTROY { }
 
 1;
 

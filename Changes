@@ -1,4 +1,9 @@
 ____________________________________________________________________________
+[  7838] By: autrijus                              on 2003/09/02  14:09:43
+        Log: * This be 0.23.
+             * no API changes, but seriously tidied up the internals.
+	   ! lib/Template/Extract.pm
+____________________________________________________________________________
 [  7822] By: autrijus                              on 2003/09/01  12:53:35
         Log: * This be 0.22.
              * properly handles backtracking, so two [% var %]s are

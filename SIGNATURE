@@ -14,9 +14,9 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 7f9307158cde80953152c84defe7f2ef995200f4 Changes
+SHA1 4b5402f314a779f42bba7b9dbe202b19427d1953 Changes
 SHA1 51cf7365849daf80fad7ea2b8bbbf848a35b8258 MANIFEST
-SHA1 2f561decb4143166b6cb230a5d8e4d8847c85da0 META.yml
+SHA1 78fc95584c7e0f351f017535321bcab0a761ab6c META.yml
 SHA1 a1044fe18b2b6a6c298cf8305250f6032574b1ef Makefile.PL
 SHA1 590728a1b100dc62494d4ad290ffe5e67b61088d README
 SHA1 2b6751f9e3f78bfba9ebf348d9d99ddbde9d35e8 inc/Module/Install.pm
@@ -27,13 +27,13 @@ SHA1 f042d91d7f691e36c8bcb0b495dfc0b9f92576c3 inc/Module/Install/Makefile.pm
 SHA1 5494a21ff1755b95f0d36c788e4816af0c804645 inc/Module/Install/Metadata.pm
 SHA1 4290a41375e931a7265eb287c8eb58591cec7db4 inc/Test/Builder.pm
 SHA1 aede4a85850068b00e25b6b4f10bf1cd11c5b73b inc/Test/More.pm
-SHA1 07d0222e4f29fa7c725492eb7460e06484e2fead lib/Template/Extract.pm
+SHA1 b0bb717b1db283b5f607276cb8d714ea40795b41 lib/Template/Extract.pm
 SHA1 5fe1ff488ba9bff6f382eb6f0faf0ee342c812a4 t/0-signature.t
 SHA1 01ee66cefd8424af09dfc8f9b3423088131d74f2 t/1-basic.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.3 (FreeBSD)
 
-iD8DBQE/U0GitLPdNzw1AaARAg9AAKCdFE019D02vYFN5iPi1yrNlvswiACfa+dW
-4YsbZr9zYDJqChce8HPVC/c=
-=GyPS
+iD8DBQE/VKV0tLPdNzw1AaARAmaXAJ4pde6tP0Nfc+/C8v5H1Zsld+IrhwCfTyAX
+cU4cIS0/K8AahKmqYVe0d9Y=
+=8pwJ
 -----END PGP SIGNATURE-----
