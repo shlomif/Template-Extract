@@ -1,20 +1,23 @@
 ____________________________________________________________________________
-[  9564] By: autrijus                              on 2004/01/03  08:22:20
-        Log: * This be 0.34.
-             * cleans up code and POD; update copyright year.
-           ! README lib/Template/Extract.pm t/1-basic.t
+[  9634] By: autrijus                              on 2004/01/09  17:39:27
+        Log: * This be 0.35.
+             * Fixes regression caused by newer TT2 versions,
+             which adds the extra "#line" directives into the
+             regular expressions.  Spotted by Yi-Ming Cao
+             and Sam Smith.
+	   ! lib/Template/Extract.pm
 ____________________________________________________________________________
 [  9563] By: autrijus                              on 2004/01/03  06:52:01
         Log: * update to newer Module::Install, and fill in
              missing .SKIP entries.
-           ! MANIFEST MANIFEST.SKIP Makefile.PL
+	   ! MANIFEST MANIFEST.SKIP Makefile.PL
 ____________________________________________________________________________
 [  9562] By: autrijus                              on 2004/01/03  06:51:45
         Log: * suggestion from Luis Oliveira: embedded non-capturing
              regexes, such as [% /\s*/ $].
              * add implicit optional newlines around [% FOREACH %]
              blocks, so it can intuitively work.
-           ! lib/Template/Extract.pm t/1-basic.t
+	   ! lib/Template/Extract.pm t/1-basic.t
 ____________________________________________________________________________
 [  9296] By: autrijus                              on 2003/12/13  12:34:48
         Log: * This be 0.33.
@@ -22,26 +25,26 @@ ____________________________________________________________________________
              files, so older versions of Module::Build/MakeMaker
              won't trip Module::Signature over.  Thanks to CPAN
              smoker Jost Krieger for the report.
-           + MANIFEST.SKIP
-           ! MANIFEST lib/Template/Extract.pm
+	   + MANIFEST.SKIP
+	   ! MANIFEST lib/Template/Extract.pm
 ____________________________________________________________________________
 [  9292] By: autrijus                              on 2003/12/13  01:55:15
         Log: * This be 0.32.
              * Improved build intrastructure, suggested by Mark Fowler,
              to automatically check and download nmake.exe on Windows,
              as well as supporting a Module::Build-compatible Build.PL.
-           + Build.PL
-           ! MANIFEST Makefile.PL README
-           ! lib/Template/Extract.pm
+	   + Build.PL
+	   ! MANIFEST Makefile.PL README
+	   ! lib/Template/Extract.pm
 ____________________________________________________________________________
 [  9149] By: autrijus                              on 2003/12/06  12:18:59
         Log: * Clarify documents; add links to Simon and Mark's
-               articles.
-           ! lib/Template/Extract.pm
+	       articles.
+	   ! lib/Template/Extract.pm
 ____________________________________________________________________________
 [  8521] By: autrijus                              on 2003/10/21  22:52:33
         Log: * silence some warnings.
-           ! Makefile.PL t/1-basic.t
+	   ! Makefile.PL t/1-basic.t
 ____________________________________________________________________________
 [  8520] By: autrijus                              on 2003/10/21  22:49:57
         Log: * This be 0.31.
@@ -50,7 +53,7 @@ ____________________________________________________________________________
              * Tatsuhiko Miyagawa pointed out that [% FOREACH %] blocks
              fail to match prematurely because it can match zero times.
              Now outermost foreach blocks must match at least once.
-           ! lib/Template/Extract.pm t/1-basic.t
+	   ! lib/Template/Extract.pm t/1-basic.t
 ____________________________________________________________________________
 [  8495] By: autrijus                              on 2003/10/20  01:01:46
         Log: * This be 0.30.
@@ -62,7 +65,7 @@ ____________________________________________________________________________
              * Much more robust validating code inside FOREACHs.
              * Refactored the commong context walking code from "get",
              "set" and "validate" into _ext, and improved readability.
-           ! lib/Template/Extract.pm t/1-basic.t
+	   ! lib/Template/Extract.pm t/1-basic.t
 ____________________________________________________________________________
 [  7907] By: autrijus                              on 2003/09/06  05:31:14
         Log: * This be 0.25.
@@ -70,38 +73,38 @@ ____________________________________________________________________________
              was failing if there are more than one loops inside
              another loop, because the loop counter of the first
              loop inside was inadvertently reset to 0.  Fixed.
-           ! lib/Template/Extract.pm t/1-basic.t
+	   ! lib/Template/Extract.pm t/1-basic.t
 ____________________________________________________________________________
 [  7842] By: autrijus                              on 2003/09/02  17:01:38
         Log: * This be 0.24.
              * now Template::Generate is released, modify relevant PODs.
              * unify nomenclature: ($data, $template, $document).
-           ! lib/Template/Extract.pm t/1-basic.t
+	   ! lib/Template/Extract.pm t/1-basic.t
 ____________________________________________________________________________
 [  7840] By: autrijus                              on 2003/09/02  14:17:39
         Log: * some more style cleanup.
-           ! lib/Template/Extract.pm
+	   ! lib/Template/Extract.pm
 ____________________________________________________________________________
 [  7838] By: autrijus                              on 2003/09/02  14:09:43
         Log: * This be 0.23.
              * no API changes, but seriously tidied up the internals.
-           ! lib/Template/Extract.pm
+	   ! lib/Template/Extract.pm
 ____________________________________________________________________________
 [  7822] By: autrijus                              on 2003/09/01  12:53:35
         Log: * This be 0.22.
              * properly handles backtracking, so two [% var %]s are
-               guaranteed
+	       guaranteed
              to match the same sequence.
              * much more robust post-matching handlers, so the same
-               variable
+	       variable
              matched at the same location (but are of different length)
              will not create a new item in the enclosing FOREACH array.
-           ! lib/Template/Extract.pm t/1-basic.t
+	   ! lib/Template/Extract.pm t/1-basic.t
 ____________________________________________________________________________
 [  7820] By: autrijus                              on 2003/09/01  10:11:13
         Log: * This be 0.21.
              * oops, left debug statements and "use YAML" in.
-           ! lib/Template/Extract.pm t/1-basic.t
+	   ! lib/Template/Extract.pm t/1-basic.t
 ____________________________________________________________________________
 [  7815] By: autrijus                              on 2003/08/31  19:28:28
         Log: * This be 0.20.
@@ -109,28 +112,28 @@ ____________________________________________________________________________
              * nested [% FOREACH %] blocks now work.
              * much more robust and readable DEBUG output.
              * commented the code somewhat so it's at least grokkable.
-           ! lib/Template/Extract.pm t/1-basic.t
+	   ! lib/Template/Extract.pm t/1-basic.t
 ____________________________________________________________________________
 [  7814] By: autrijus                              on 2003/08/31  18:27:51
         Log: * checkpoint.
-           ! lib/Template/Extract.pm
+	   ! lib/Template/Extract.pm
 ____________________________________________________________________________
 [  7800] By: autrijus                              on 2003/08/30  22:43:11
         Log: * allow [%...%], [%  ...  %], or any other combination of
              \s characters (or lack thereof).
-           ! lib/Template/Extract.pm
+	   ! lib/Template/Extract.pm
 ____________________________________________________________________________
 [  7798] By: autrijus                              on 2003/08/30  21:33:11
         Log: * This be 0.11.
              * fix typo, documentation, tabs, spelling, tests, etc...
-           ! lib/Template/Extract.pm t/1-basic.t
+	   ! lib/Template/Extract.pm t/1-basic.t
 ____________________________________________________________________________
 [  7795] By: autrijus                              on 2003/08/30  17:02:31
         Log: * This be 0.10, initial release.
              * add manifest.
-           + MANIFEST
+	   + MANIFEST
 ____________________________________________________________________________
 [  7794] By: autrijus                              on 2003/08/30  17:01:35
         Log: * refactored, cleaned up template extractor.
-           + Makefile.PL README lib/Template/Extract.pm
-           + t/0-signature.t t/1-basic.t
+	   + Makefile.PL README lib/Template/Extract.pm
+	   + t/0-signature.t t/1-basic.t

@@ -1,8 +1,8 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #18 $ $Change: 9564 $ $DateTime: 2004/01/03 08:54:59 $ vim: expandtab shiftwidth=4
+# $Revision: #19 $ $Change: 9634 $ $DateTime: 2004/01/09 17:39:27 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.34';
+$Template::Extract::VERSION = '0.35';
 
 use 5.006;
 use strict;
@@ -17,8 +17,8 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.34 of Template::Extract, released
-January 3, 2004.
+This document describes version 0.35 of Template::Extract, released
+January 10, 2004.
 
 =head1 SYNOPSIS
 
@@ -346,7 +346,12 @@ sub textblock {
 }
 
 sub block {
-    return join( '', @{ $_[1] || [] } );
+    my $rv = '';
+    foreach my $chunk ( map "$_", @{$_[1]||[]} ) {
+        $chunk =~ s/^#line .*\n//;
+        $rv .= $chunk;
+    }
+    return $rv;
 }
 
 sub quoted {
