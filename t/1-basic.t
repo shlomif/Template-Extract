@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 # $File: //member/autrijus/Template-Extract/t/1-basic.t $ $Author: autrijus $
-# $Revision: #7 $ $Change: 7907 $ $DateTime: 2003/09/06 05:31:14 $ vim: expandtab shiftwidth=4
+# $Revision: #8 $ $Change: 8495 $ $DateTime: 2003/10/20 01:01:46 $ vim: expandtab shiftwidth=4
 
 use strict;
-use Test::More tests => 7;
+use Test::More tests => 10;
 
 use_ok('Template::Extract');
 
@@ -122,8 +122,20 @@ $data = $obj->extract($template, $document);
 is_deeply($data, {
     'C' => 'doe',
     'D' => 'ray',
-    'E' => 'me'
+    'E' => 'me',
 }, 'extract() with backtracking');
+
+my $ext_data = { F => 'fa' };
+$data = $obj->extract($template, $document, $ext_data);
+
+is_deeply($data, {
+    'C' => 'doe',
+    'D' => 'ray',
+    'E' => 'me',
+    'F' => 'fa',
+}, 'extract() with external data');
+
+is_deeply($data, $ext_data, 'extract() should return the same data');
 
 $obj = Template::Extract->new;
 
@@ -131,7 +143,7 @@ $template = << '.';
 [% FOREACH entry %]
 [% ... %]
 <div>[% FOREACH title %]<i>[% title_text %]</i>[% END %]<br>[% content %]</div>
-  ([% FOREACH comment %]<b>[% comment_text %]</b> |[% END %]Comment on this)
+  ([% FOREACH comment %][% SET sub.comment = 1 %]<b>[% comment_text %]</b> |[% END %]Comment on this)
 [% END %]
 .
 
@@ -148,6 +160,7 @@ is_deeply($data, {
     'entry' => [ { 
         'comment'   => [ {
             'comment_text' => '1 Comment',
+            'sub' => { 'comment' => 1 },
         } ],
         'content'   => 'xxx',
         'title'   => [ {
@@ -162,3 +175,25 @@ is_deeply($data, {
         } ],
     } ],
 }, 'extract() with two FOREACHs nested inside a FOREACH');
+
+$obj = Template::Extract->new;
+
+$template = << '.';
+[% FOREACH top %][% FOREACH foo %][% SET bar.x = "set" %]<[% baz.y %]|[% qux.z %]>[% END %][% END %]
+.
+
+$document = << '.';
+<test1|1><test2|2><test3
+.
+
+$data = $obj->extract($template, $document);
+
+is_deeply($data, { top => [{ foo => [{
+    bar => { x => 'set' },
+    baz => { y => 'test1' },
+    qux => { z => '1' },
+}, {
+    bar => { x => 'set' },
+    baz => { y => 'test2' },
+    qux => { z => '2' },
+}] }] }, 'extract() with SET directive inside two FOREACHs');

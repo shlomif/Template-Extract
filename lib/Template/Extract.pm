@@ -1,8 +1,8 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #11 $ $Change: 7907 $ $DateTime: 2003/09/06 05:31:14 $ vim: expandtab shiftwidth=4
+# $Revision: #12 $ $Change: 8495 $ $DateTime: 2003/10/20 01:01:46 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.25';
+$Template::Extract::VERSION = '0.30';
 
 use 5.006;
 use strict;
@@ -17,8 +17,8 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.25 of Template::Extract, released
-September 6, 2003.
+This document describes version 0.30 of Template::Extract, released
+October 20, 2003.
 
 =head1 SYNOPSIS
 
@@ -52,9 +52,8 @@ extraction functionality.  It can take a rendered document and its template
 together, and get the original data structure back, effectively reversing
 the C<process> function.
 
-This module is considered experimental.  If you just wish to extract
-RSS-type information out of a HTML document, B<WWW::SherlockSearch>
-may be a more robust solution.
+If you just wish to extract RSS-type information out of a HTML document,
+B<WWW::SherlockSearch> may be a more flexible solution.
 
 =head1 METHODS
 
@@ -62,7 +61,11 @@ may be a more robust solution.
 
 This method takes three arguments: the template string, or a reference to
 it; a document string to match against; and an optional hash reference to
-store the extracted values into.
+supply initial files, as well as storing the extracted values into.
+
+The return value is C<\%values> upon success, and C<undef> on failure.
+If C<\%values> is omitted from the argument list, a new hash reference
+will be constructed and returned.
 
 Extraction is done by transforming the result from I<Template::Parser>
 to a highly esoteric regular expression, which utilizes the (?{...}) 
@@ -83,6 +86,8 @@ C<[% SET %]> and C<[% FOREACH %]> directives, because C<[% WHILE %]>,
 C<[% CALL %]> and C<[% SWITCH %]> blocks are next to impossible to
 extract correctly.
 
+C<[% SET key = "value" %]> only works for simple scalar values.
+
 There is no support for different I<PRE_CHOMP> and I<POST_CHOMP> settings 
 internally, so extraction could fail silently on wrong places.
 
@@ -95,13 +100,12 @@ into related research, please mail any ideas to me.
 
 =cut
 
-my $data; # the data structure to be returned by extract()
-my ( %loop, $cur_loop, $paren_id, $block_id, $param );
+my ( %loop, $cur_loop, $paren_id, $block_id, $data, @set );
 
 sub extract {
-    my ( $self, $template, $document, $ext_param ) = @_;
+    my ( $self, $template, $document, $ext_data ) = @_;
 
-    $self->_set_param($ext_param);
+    $self->_init($ext_data);
 
     if ( defined $template ) {
 	my $parser = Template::Parser->new(
@@ -119,8 +123,8 @@ sub extract {
 	$self->{regex} = $parser->parse($template)->{BLOCK};
     }
 
-    defined($document)        or return;
-    defined( $self->{regex} ) or return;
+    defined($document)        or return undef;
+    defined( $self->{regex} ) or return undef;
 
     {
         use re 'eval';
@@ -128,7 +132,7 @@ sub extract {
         return $data if $document =~ /$self->{regex}/s;
     }
 
-    return;
+    return undef;
 }
 
 sub _enter_loop {
@@ -143,34 +147,33 @@ sub _enter_loop {
 }
 
 sub _validate {
-    my $vars = shift;
-    my $obj  = ( _adjust( $data, @_ ) )[0]->{ $_[0] };
+    my ($obj, $key, $vars) = @_;
 
-    UNIVERSAL::isa( $obj, 'ARRAY' ) or return;
+    ref($obj) eq 'HASH' or return;
+    my $old = $obj->{$key} if exists $obj->{$key};
+    ref($old) eq 'ARRAY' or return;
 
-    @$obj = grep {
-	my $entry = $_;
-	(grep { exists $entry->{$_} } @$vars ) == @$vars;
-    } @$obj;
-}
+    print "Validate: [$old $key @$vars]\n" if $DEBUG;
 
-sub _set {
-    my ( $var, $val, $num ) = splice( @_, 0, 3 );
-    my $obj = $data;
+    my @new;
 
-    if (@_) {
-	my $cur = $loop{ $_[0] };           # current loop structure
-
-	# if pos() changed, increment the iteration counter
-	$cur->{var}{$num}++ if ( ( $cur->{pos}{$num} ||= -1 ) != $-[$num] );
-	$cur->{pos}{$num} = $-[$num];       # remember pos()
-
-	my $iteration = $cur->{var}{$num} - 1;
-	$obj = _traverse( $data, @_ )->{ $cur->{name} }[$iteration] ||= {};
+    OUTER:
+    foreach my $entry (@$old) {
+	next unless %$entry;
+	foreach my $var (@$vars) {
+	    # If it's a foreach, it needs to not match or match something.
+	    if (ref($var)) {
+		next if !exists($entry->{$$var}) or @{$entry->{$$var}};
+	    }
+	    else {
+		next if exists($entry->{$var});
+	    }
+	    next OUTER; # failed!
+	}
+	push @new, $entry;
     }
 
-    ( $obj, $var ) = _adjust( $obj, @$var );
-    $obj->{$var} = $val;
+    delete $_[0]{$key} unless @$old = @new;
 }
 
 sub _adjust {
@@ -195,13 +198,13 @@ sub _traverse {
 }
 
 # initialize temporary variables
-sub _set_param {
+sub _init {
     $paren_id = 0;
     $block_id = 0;
-    $data     = {};
     %loop     = ();
+    @set      = ();
     $cur_loop = undef;
-    $param    = $_[1] || {};
+    $data     = $_[1] || {};
 }
 
 # utility function to add regex eval brackets
@@ -216,11 +219,11 @@ sub template {
     # Deal with backtracking here -- substitute repeated occurences of
     # the variable into backtracking sequences like (\1)
     my %seen;
-    $regex =~ s{(                       # entire GET sequence [1]
+    $regex =~ s{(                       # entire sequence [1]
         \(\.\*\?\)                      #   matching regex
         \(\?\{                          #   post-matching regex...
             \s*                         #     whitespaces
-            _set\(                      #     capturing handler...
+            _ext\(                      #     capturing handler...
                 \(                      #       inner cluster of...
                     \[ (.+?) \],\s*     #         var name [2]
                     \$.*?,\s*           #         dollar with ^N/counter
@@ -235,7 +238,7 @@ sub template {
             "(\\$seen{$2,$4})"          #   replace it with backtracker
         } else {                        # otherwise
             $seen{$2,$4} = $3;          #   register this var's counter
-            $1;                         #   and preserve the GET sequence 
+            $1;                         #   and preserve the sequence 
         }
     }gex;
     return $regex;
@@ -244,18 +247,21 @@ sub template {
 sub foreach {
     my $regex = $_[4];
 
-    # find out immediate SET childrens
-    my %vars;
-    $vars{$_}++ for ( $regex =~ /_set\(\(\[('\w+').*?\], \$\^N, \d+\)\*\*/g );
-    my $vars = join( ', ', sort keys %vars );
+    # find out immediate children
+    my %vars = reverse (
+	$regex =~ /_ext\(\(\[(\[?)('\w+').*?\], [^,]+, \d+\)\*\*/g
+    );
+    my $vars = join( ',', map { $vars{$_} ? "\\$_" : $_ } sort keys %vars );
 
-    # append this block's id into the _set calling chain
+    # append this block's id into the _get calling chain
     ++$block_id;
+    ++$paren_id;
     $regex =~ s/\*\*/, $block_id\*\*/g;
 
-    return _re("_enter_loop($_[2], $block_id)") .   # sets $cur_loop
-           "(?:$regex)*" .                          # match content
-           _re("_validate([$vars], $_[2])");        # weed out partial matches
+    return _re("_enter_loop($_[2], $block_id)") .    # sets $cur_loop
+           "(?:$regex)*()" .                         # match content
+           _re("_ext(([[$_[2],[$vars]]], \\'validate', $paren_id)**)");
+           # weed out partial matches
 }
 
 sub get {
@@ -263,16 +269,51 @@ sub get {
 
     ++$paren_id;
     return '(.*?)' .    # ** is the placeholder for parent loop ids
-           _re("_set(([$_[1]], \$$paren_id, $paren_id)\*\*)");
+           _re("_ext(([$_[1]], \$$paren_id, $paren_id)\*\*)");
 }
 
 sub set {
-    my @parents = map { substr( $_, 1, -1 ) }
+    ++$paren_id;
+
+    my $val = $_[1][1];
+    $val =~ s/^'(.*)'\z/$1/;
+
+    push(@set, $val);
+
+    my $parents = join ',',
                   map { $_[1][0][ $_ * 2 ] }
                   ( 0 .. $#{ $_[1][0] } / 2 );
-    my ( $obj, $var ) = _adjust( $param, @parents );
-    $obj->{$var} = $_[1][1];
-    return '';
+    return '()' . _re("_ext(([$parents], \\$#set, $paren_id)\*\*)");
+}
+
+sub _ext {
+    my ( $var, $val, $num ) = splice( @_, 0, 3 );
+    my $obj = $data;
+
+    if (@_) {
+	print "Ext: [ $$val with $num on $-[$num]]\n" if ref($val) and $DEBUG;
+	my $cur = $loop{ $_[0] };           # current loop structure
+
+	# if pos() changed, increment the iteration counter
+	$cur->{var}{$num}++ if ( ( $cur->{pos}{$num} ||= -1 ) != $-[$num] )
+	    or ref $val and $$val eq 'validate';
+	$cur->{pos}{$num} = $-[$num];       # remember pos()
+
+	my $iteration = $cur->{var}{$num} - 1;
+	$obj = _traverse( $data, @_ )->{ $cur->{name} }[$iteration] ||= {};
+    }
+
+    ( $obj, $var ) = _adjust( $obj, @$var );
+
+    if (!ref($val)) {
+        $obj->{$var} = $val;
+    }
+    elsif ($$val eq 'validate') {
+        _validate($obj, @$var);
+    }
+    else {
+        $obj->{$var} = $set[$$val];
+    }
 }
 
 sub textblock {

@@ -1,4 +1,4 @@
-#line 1 "inc/Module/Install/MakeMaker.pm - /usr/local/lib/perl5/site_perl/5.8.0/Module/Install/MakeMaker.pm"
+#line 1 "inc/Module/Install/MakeMaker.pm - /usr/local/lib/perl5/site_perl/5.8.1/Module/Install/MakeMaker.pm"
 # $File: //depot/cpan/Module-Install/lib/Module/Install/MakeMaker.pm $ $Author: autrijus $
 # $Revision: #10 $ $Change: 1645 $ $DateTime: 2003/07/16 01:05:06 $ vim: expandtab shiftwidth=4
 

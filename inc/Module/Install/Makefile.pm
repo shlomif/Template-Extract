@@ -1,6 +1,6 @@
-#line 1 "inc/Module/Install/Makefile.pm - /usr/local/lib/perl5/site_perl/5.8.0/Module/Install/Makefile.pm"
-# $File: //depot/cpan/Module-Install/lib/Module/Install/Makefile.pm $ $Author: autrijus $
-# $Revision: #45 $ $Change: 1645 $ $DateTime: 2003/07/16 01:05:06 $ vim: expandtab shiftwidth=4
+#line 1 "inc/Module/Install/Makefile.pm - /usr/local/lib/perl5/site_perl/5.8.1/Module/Install/Makefile.pm"
+# $File: //depot/cpan/Module-Install/lib/Module/Install/Makefile.pm $ $Author: ingy $
+# $Revision: #46 $ $Change: 1765 $ $DateTime: 2003/10/04 15:42:05 $ vim: expandtab shiftwidth=4
 
 package Module::Install::Makefile;
 use Module::Install::Base; @ISA = qw(Module::Install::Base);
@@ -31,6 +31,17 @@ sub clean_files {
     $self->makemaker_args( clean => { FILES => "@_ " } );
 }
 
+sub libs {
+    my $self = shift;
+    my $libs = ref $_[0] ? shift : [shift];
+    $self->makemaker_args( LIBS => $libs );
+}
+
+sub inc {
+    my $self = shift;
+    $self->makemaker_args( INC => shift );
+}
+
 sub write {
     my $self = shift;
     die "&Makefile->write() takes no arguments\n" if @_;
@@ -46,9 +57,11 @@ sub write {
 	$args->{ABSTRACT} = $self->abstract;
 	$args->{AUTHOR} = $self->author;
     }
-    if ( eval($ExtUtils::MakeMaker::VERSION) >= 6.10 )
-    {
+    if ( eval($ExtUtils::MakeMaker::VERSION) >= 6.10 ) {
         $args->{NO_META} = 1;
+    }
+    if ( eval($ExtUtils::MakeMaker::VERSION) > 6.17 ) {
+	$args->{SIGN} = 1 if $self->sign;
     }
 
     # merge both kinds of requires into prereq_pm
@@ -110,4 +123,4 @@ sub postamble {
 
 __END__
 
-#line 242
+#line 255

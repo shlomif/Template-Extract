@@ -1,18 +1,21 @@
-#line 1 "inc/Module/Install/Metadata.pm - /usr/local/lib/perl5/site_perl/5.8.0/Module/Install/Metadata.pm"
+#line 1 "inc/Module/Install/Metadata.pm - /usr/local/lib/perl5/site_perl/5.8.1/Module/Install/Metadata.pm"
 # $File: //depot/cpan/Module-Install/lib/Module/Install/Metadata.pm $ $Author: autrijus $
-# $Revision: #25 $ $Change: 1665 $ $DateTime: 2003/08/18 07:52:47 $ vim: expandtab shiftwidth=4
+# $Revision: #26 $ $Change: 1777 $ $DateTime: 2003/10/13 02:25:45 $ vim: expandtab shiftwidth=4
 
 package Module::Install::Metadata;
 use Module::Install::Base; @ISA = qw(Module::Install::Base);
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 use strict 'vars';
 use vars qw($VERSION);
 
 sub Meta { shift }
 
-my @scalar_keys = qw(name module_name version abstract author license distribution_type);
+my @scalar_keys = qw(
+    name module_name version abstract author license
+    distribution_type sign
+);
 my @tuple_keys  = qw(build_requires requires recommends bundles);
 
 foreach my $key (@scalar_keys) {
@@ -51,11 +54,22 @@ sub features {
     return @{$self->{values}{features}};
 }
 
+sub no_index {
+    my $self = shift;
+    my $type = shift;
+    push @{$self->{values}{no_index}{$type}}, @_ if $type;
+    return $self->{values}{no_index};
+}
+
 sub _dump {
     my $self = shift;
     my $package = ref($self->_top);
     my $version = $self->_top->VERSION;
     my %values = %{$self->{values}};
+
+    delete $values{sign};
+
+    $values{license} ||= 'unknown';
     $values{distribution_type} ||= 'module';
     $values{name} ||= do {
         my $name = $values{module_name};
@@ -73,7 +87,26 @@ sub _dump {
         $dump .= "  $_->[0]: $_->[1]\n" for @{$values{$key}};
     }
 
-    return($dump . "private:\n  directory:\n    - inc\ngenerated_by: $package version $version\n");
+    if (my $no_index = $values{no_index}) {
+        push @{$no_index->{directory}}, 'inc';
+        require YAML;
+        local $YAML::UseHeader = 0;
+        $dump .= YAML::Dump({ no_index => $no_index});
+        $dump .= YAML::Dump({ private => $no_index});
+    }
+    else {
+        $dump .= << "META";
+no_index:
+  directory:
+    - inc
+private:
+  directory:
+    - inc
+META
+    }
+    
+    $dump .= "generated_by: $package version $version\n";
+    return $dump;
 }
 
 sub read {
@@ -121,6 +154,12 @@ sub version_from {
     my ($self, $version_from) = @_;
     require ExtUtils::MM_Unix;
     $self->version(ExtUtils::MM_Unix->parse_version($version_from));
+}
+
+sub abstract_from {
+    my ($self, $abstract_from) = @_;
+    require ExtUtils::MM_Unix;
+    $self->abstract(ExtUtils::MM_Unix->parse_abstract($abstract_from));
 }
 
 1;

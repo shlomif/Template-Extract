@@ -1,4 +1,16 @@
 ____________________________________________________________________________
+[  8495] By: autrijus                              on 2003/10/20  01:01:46
+        Log: * This be 0.30.
+             * This module is no longer experimental. :)
+             * Russell Matbouli reports that extract did not properly
+             set \%values.  Fixed.
+             * [% SET key = "value" %] now works inside FOREACHs.
+             * [% SET nested.key = "value" %] now works.
+             * Much more robust validating code inside FOREACHs.
+             * Refactored the commong context walking code from "get",
+             "set" and "validate" into _ext, and improved readability.
+	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
 [  7907] By: autrijus                              on 2003/09/06  05:31:14
         Log: * This be 0.25.
              * Kate L Pugh pointed out the _enter_loop construct

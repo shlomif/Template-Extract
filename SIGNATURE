@@ -14,26 +14,26 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 e5a2c2420c7ffd6d7f14fdea3de736721737fdf8 Changes
+SHA1 ca33be09e35138fe7bf765dbb94ec78bd9cf66f7 Changes
 SHA1 51cf7365849daf80fad7ea2b8bbbf848a35b8258 MANIFEST
-SHA1 86b242527d6d40ef72816332fd26fb9aac141374 META.yml
+SHA1 d4ae7f9219d1cd6758ff7f47a278f580a7bee11e META.yml
 SHA1 a1044fe18b2b6a6c298cf8305250f6032574b1ef Makefile.PL
 SHA1 590728a1b100dc62494d4ad290ffe5e67b61088d README
-SHA1 2b6751f9e3f78bfba9ebf348d9d99ddbde9d35e8 inc/Module/Install.pm
-SHA1 0e59a6491b7275cacf070218c862a42e8135f6d8 inc/Module/Install/Base.pm
-SHA1 2947a46529e9b64cf5e0291a20332e71edabc546 inc/Module/Install/Include.pm
-SHA1 cb63ee2fceecea6f93cc25bfb5cc122ca6870ed8 inc/Module/Install/MakeMaker.pm
-SHA1 f042d91d7f691e36c8bcb0b495dfc0b9f92576c3 inc/Module/Install/Makefile.pm
-SHA1 5494a21ff1755b95f0d36c788e4816af0c804645 inc/Module/Install/Metadata.pm
-SHA1 4290a41375e931a7265eb287c8eb58591cec7db4 inc/Test/Builder.pm
-SHA1 aede4a85850068b00e25b6b4f10bf1cd11c5b73b inc/Test/More.pm
-SHA1 eeb4e64d433dc3e45e6073359b2c95ac3999ae37 lib/Template/Extract.pm
+SHA1 9a48700879e8032dd5b96ffaa27f59641e2bc9af inc/Module/Install.pm
+SHA1 019bccc5b2e364447c6e6e150d049ca2a216598e inc/Module/Install/Base.pm
+SHA1 c1e427c1f670a187cb663e8e446193bbce16b92f inc/Module/Install/Include.pm
+SHA1 e2547371d0317abbfa3d56b0d20bba909885d7db inc/Module/Install/MakeMaker.pm
+SHA1 2a6f3921bb5c83e95856664ff5cbea98bdc43674 inc/Module/Install/Makefile.pm
+SHA1 722f8b5df4795ab97cb65538b19758d874b961eb inc/Module/Install/Metadata.pm
+SHA1 e28bb5a620a5c392b06450778d35cf1707bdca97 inc/Test/Builder.pm
+SHA1 ae7b5b4c6e437454712eccfa5c09e0c95560b5c5 inc/Test/More.pm
+SHA1 2a54f7fc7123668f47ef79e8d8b5f51bc2a87ef8 lib/Template/Extract.pm
 SHA1 5fe1ff488ba9bff6f382eb6f0faf0ee342c812a4 t/0-signature.t
-SHA1 a7bf53dc191198eb810119b00283a0780a7af8c2 t/1-basic.t
+SHA1 f63f1c3087e9a77b2bce9588f4aa350037995085 t/1-basic.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.3 (FreeBSD)
 
-iD8DBQE/WXGUtLPdNzw1AaARAlcWAJ4niRECcdLT10rqXcx8PijGa2//kwCdFQO2
-B/Gu9oxR/c6bGwWOw/jLZB0=
-=SHEK
+iD8DBQE/kzRktLPdNzw1AaARAs0cAKCl3CNll3YGBOcIsmnfEh8oqt3Q9ACglYCD
+fzUNbJxyQ5QAPlIvD6n1TQo=
+=ru4f
 -----END PGP SIGNATURE-----
