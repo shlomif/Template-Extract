@@ -1,0 +1,10 @@
+____________________________________________________________________________
+[  7795] By: autrijus                              on 2003/08/30  17:02:31
+        Log: * This be 0.10, initial release.
+             * add manifest.
+	   + MANIFEST
+____________________________________________________________________________
+[  7794] By: autrijus                              on 2003/08/30  17:01:35
+        Log: * refactored, cleaned up template extractor.
+	   + Makefile.PL README lib/Template/Extract.pm
+	   + t/0-signature.t t/1-basic.t
