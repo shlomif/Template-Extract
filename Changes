@@ -1,4 +1,13 @@
 ____________________________________________________________________________
+[  9296] By: autrijus                              on 2003/12/13  12:34:48
+        Log: * This be 0.33.
+             * Adds MANIFEST.SKIP that takes care of Module::Build
+             files, so older versions of Module::Build/MakeMaker
+             won't trip Module::Signature over.  Thanks to CPAN
+             smoker Jost Krieger for the report.
+	   + MANIFEST.SKIP
+	   ! MANIFEST lib/Template/Extract.pm
+____________________________________________________________________________
 [  9292] By: autrijus                              on 2003/12/13  01:55:15
         Log: * This be 0.32.
              * Improved build intrastructure, suggested by Mark Fowler,

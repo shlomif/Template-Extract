@@ -20,3 +20,4 @@ README
 SIGNATURE
 t/0-signature.t
 t/1-basic.t
+MANIFEST.SKIP

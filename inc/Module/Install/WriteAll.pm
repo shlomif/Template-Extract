@@ -8,10 +8,8 @@ use Module::Install::Base; @ISA = qw(Module::Install::Base);
 sub WriteAll {
     my $self = shift;
 
+    $self->admin->WriteAll if $self->is_admin;
     $self->Meta->write;
-
-    $self->load($_) for qw(Makefile check_nmake can_run get_file);
-    $self->load('Build') if -e 'Build.PL';
 
     if ($0 =~ /Build.PL$/i) {
 	$self->Build->write;
