@@ -1,5 +1,5 @@
 package Template::Extract::Run; 
-$Template::Extract::Run::VERSION = '0.37';
+$Template::Extract::Run::VERSION = '0.38';
 
 use 5.006;
 use strict;
@@ -30,7 +30,7 @@ Template::Extract::Run - Apply compiled regular expressions on documents
     .
 
     print Data::Dumper::Dumper(
-	Template::Extract::Run->new->run($regex, $document)
+        Template::Extract::Run->new->run($regex, $document)
     );
 
 =head1 DESCRIPTION
@@ -82,9 +82,9 @@ sub _init {
 
 sub _enter_loop {
     $cur_loop = $loop{ $_[1] } ||= {
-	name  => $_[0],
-	id    => $_[1],
-	count => -1,
+        name  => $_[0],
+        id    => $_[1],
+        count => -1,
     };
     $cur_loop->{count}++;
     $cur_loop->{var} = {};
@@ -104,18 +104,18 @@ sub _leave_loop {
 
     OUTER:
     foreach my $entry (@$old) {
-	next unless %$entry;
-	foreach my $var (@$vars) {
-	    # If it's a foreach, it needs to not match or match something.
-	    if (ref($var)) {
-		next if !exists($entry->{$$var}) or @{$entry->{$$var}};
-	    }
-	    else {
-		next if exists($entry->{$var});
-	    }
-	    next OUTER; # failed!
-	}
-	push @new, $entry;
+        next unless %$entry;
+        foreach my $var (@$vars) {
+            # If it's a foreach, it needs to not match or match something.
+            if (ref($var)) {
+                next if !exists($entry->{$$var}) or @{$entry->{$$var}};
+            }
+            else {
+                next if exists($entry->{$var});
+            }
+            next OUTER; # failed!
+        }
+        push @new, $entry;
     }
 
     delete $_[0]{$key} unless @$old = @new;
@@ -125,7 +125,7 @@ sub _adjust {
     my ( $obj, $val ) = ( shift, pop );
 
     foreach my $var (@_) {
-	$obj = $obj->{$var} ||= {};
+        $obj = $obj->{$var} ||= {};
     }
     return ( $obj, $val );
 }
@@ -135,9 +135,9 @@ sub _traverse {
 
     my $depth = -1;
     while (my $id = pop(@_)) {
-	my $var   = $loop{$id}{name};
+        my $var   = $loop{$id}{name};
         my $index = $loop{$_[-1] || $val}{count};
-	$obj = $obj->{$var}[$index] ||= {};
+        $obj = $obj->{$var}[$index] ||= {};
     }
     return $obj;
 }
@@ -147,18 +147,18 @@ sub _ext {
     my $obj = $data;
 
     if (@_) {
-	print "Ext: [ $$val with $num on $-[$num]]\n" if ref($val) and $DEBUG;
+        print "Ext: [ $$val with $num on $-[$num]]\n" if ref($val) and $DEBUG;
 
         # fetch current loop structure
-	my $cur = $loop{ $_[0] };
-	# if pos() changed, increment the iteration counter
-	$cur->{var}{$num}++ if ( ( $cur->{pos}{$num} ||= -1 ) != $-[$num] )
-	    or ref $val and $$val eq 'leave_loop';
+        my $cur = $loop{ $_[0] };
+        # if pos() changed, increment the iteration counter
+        $cur->{var}{$num}++ if ( ( $cur->{pos}{$num} ||= -1 ) != $-[$num] )
+            or ref $val and $$val eq 'leave_loop';
         # remember pos()
-	$cur->{pos}{$num} = $-[$num];
+        $cur->{pos}{$num} = $-[$num];
 
-	my $iteration = $cur->{var}{$num} - 1;
-	$obj = _traverse( $data, @_ )->{ $cur->{name} }[$iteration] ||= {};
+        my $iteration = $cur->{var}{$num} - 1;
+        $obj = _traverse( $data, @_ )->{ $cur->{name} }[$iteration] ||= {};
     }
 
     ( $obj, $var ) = _adjust( $obj, @$var );

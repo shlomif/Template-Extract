@@ -1,5 +1,5 @@
 package Template::Extract::Compile;
-$Template::Extract::Compile::VERSION = '0.37';
+$Template::Extract::Compile::VERSION = '0.38';
 
 use 5.006;
 use strict;
@@ -58,20 +58,20 @@ sub compile {
     $self->_init();
 
     if ( defined $template ) {
-	my $parser = Template::Parser->new(
-	    {
+        my $parser = Template::Parser->new(
+            {
                 PRE_CHOMP  => 1,
-		POST_CHOMP => 1,
-	    }
-	);
+                POST_CHOMP => 1,
+            }
+        );
 
-	$parser->{FACTORY} = ref($self);
-	$template = $$template if UNIVERSAL::isa( $template, 'SCALAR' );
-	$template =~ s/\n+$//;
-	$template =~ s/\[%\s*(?:\.\.\.|_|__)\s*%\]/[% \/.*?\/ %]/g;
-	$template =~ s/\[%\s*(\/.*?\/)\s*%\]/'[% "' . quotemeta($1) . '" %]'/eg;
+        $parser->{FACTORY} = ref($self);
+        $template = $$template if UNIVERSAL::isa( $template, 'SCALAR' );
+        $template =~ s/\n+$//;
+        $template =~ s/\[%\s*(?:\.\.\.|_|__)\s*%\]/[% \/.*?\/ %]/g;
+        $template =~ s/\[%\s*(\/.*?\/)\s*%\]/'[% "' . quotemeta($1) . '" %]'/eg;
 
-	return $parser->parse($template)->{BLOCK};
+        return $parser->parse($template)->{BLOCK};
     }
     return undef;
 }
@@ -112,13 +112,19 @@ sub template {
             \)                          #     ...end capturing handler
             \s*                         #     whitespaces
         \}\)                            #   ...end post-maching regex
-        (\z)?                           # is it the end? [5]
     )}{
-        ($seen{$2,$4})                  # if var reoccured in the same loop
-            ? "(\\$seen{$2,$4})" :      #   replace it with backtracker
-        ( ($seen{$2,$4} = $3), $+[5] )  # otherwise, if it is the end
-            ? '(.*)' . substr( $1, 5 )  #   make it greedy
-            : $1                        # otherwise, preserve the sequence 
+        if ($seen{$2, $4}) {                # if var reoccured in the same loop
+            "(\\$seen{$2, $4})";            #   replace it with backtracker
+        }
+        else {
+            $seen{$2, $4} = $3;
+            if ($+[0] == length $regex) {   # otherwise, if it is the end
+                '(.*)' . substr( $1, 5 );   #   make it greedy
+            }
+            else {
+                $1;                         # otherwise, preserve the sequence 
+            }
+        }
     }gex;
 
     return $regex;
@@ -129,7 +135,7 @@ sub foreach {
 
     # find out immediate children
     my %vars = reverse (
-	$regex =~ /_ext\(\(\[(\[?)('\w+').*?\], [^,]+, \d+\)\*\*/g
+        $regex =~ /_ext\(\(\[(\[?)('\w+').*?\], [^,]+, \d+\)\*\*/g
     );
     my $vars = join( ',', map { $vars{$_} ? "\\$_" : $_ } sort keys %vars );
 
@@ -192,13 +198,13 @@ sub quoted {
     my $rv = '';
 
     foreach my $token ( @{ $_[1] } ) {
-	if ( $token =~ m/^'(.+)'$/ ) {    # nested hash traversal
-	    $rv .= '$';
-	    $rv .= "{$_}" foreach split( /','/, $1 );
-	}
-	else {
-	    $rv .= $token;
-	}
+        if ( $token =~ m/^'(.+)'$/ ) {    # nested hash traversal
+            $rv .= '$';
+            $rv .= "{$_}" foreach split( /','/, $1 );
+        }
+        else {
+            $rv .= $token;
+        }
     }
 
     return $rv;
@@ -223,10 +229,10 @@ sub AUTOLOAD {
     print "\n$AUTOLOAD -";
 
     for my $arg ( 1 .. $#_ ) {
-	print "\n    [$arg]: ";
-	print ref( $_[$arg] )
-	  ? Data::Dumper->Dump( [ $_[$arg] ], ['__'] )
-	  : $_[$arg];
+        print "\n    [$arg]: ";
+        print ref( $_[$arg] )
+          ? Data::Dumper->Dump( [ $_[$arg] ], ['__'] )
+          : $_[$arg];
     }
 
     return '';

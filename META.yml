@@ -1,5 +1,5 @@
 name: Template-Extract
-version: 0.37
+version: 0.38
 abstract: Use TT2 syntax to extract data from documents
 author: Autrijus Tang <autrijus@autrijus.org>
 license: perl

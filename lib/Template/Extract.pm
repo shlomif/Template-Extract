@@ -1,5 +1,5 @@
 package Template::Extract;
-$Template::Extract::VERSION = '0.37';
+$Template::Extract::VERSION = '0.38';
 
 use 5.006;
 use strict;
@@ -15,8 +15,8 @@ Template::Extract - Use TT2 syntax to extract data from documents
 
 =head1 VERSION
 
-This document describes version 0.37 of Template::Extract, released
-October 20, 2004.
+This document describes version 0.38 of Template::Extract, released
+October 25, 2004.
 
 =head1 SYNOPSIS
 

@@ -1,3 +1,8 @@
+[Changes for 0.38 - 2004-10-25]
+
+* Fix test failure with pre-5.8.4's regex optimizer.
+  Reported by CPAN testers.
+
 [Changes for 0.37 - 2004-10-20]
 
 * Move under SVK for version management.
