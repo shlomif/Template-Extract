@@ -1,8 +1,8 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #2 $ $Change: 7798 $ $DateTime: 2003/08/30 21:33:11 $ vim: expandtab shiftwidth=4
+# $Revision: #5 $ $Change: 7815 $ $DateTime: 2003/08/31 19:28:28 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.11';
+$Template::Extract::VERSION = '0.20';
 
 use 5.006;
 use strict;
@@ -17,8 +17,8 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.11 of Template::Extract, released
-August 31, 2003.
+This document describes version 0.20 of Template::Extract, released
+September 1, 2003.
 
 =head1 SYNOPSIS
 
@@ -70,8 +70,8 @@ construct to insert matched parameters into the hash reference.
 
 The special C<[% ... %]> directive is taken as C</.*?/s> in regex terms,
 i.e. "ignore everything (as short as possible) between this identifier
-and the next one".  For backward compatibility, C<[% _ %]> and C<[% __ %]>
-are also accepted (but deprecated).
+and the next one".  For backward compatibility reasons, C<[% _ %]> and
+C<[% __ %]> are also accepted.
 
 You may set C<$Template::Extract::DEBUG> to a true value to display
 generated regular expressions.
@@ -82,10 +82,6 @@ Currently, the C<extract> method only handles C<[% GET %]>,
 C<[% SET %]> and C<[% FOREACH %]> directives, because C<[% WHILE %]>,
 C<[% CALL %]> and C<[% SWITCH %]> blocks are next to impossible to
 extract correctly.
-
-With perl v5.7.1 or earlier, nested capturing may sometimes suffer from
-off-by-one errors.  Later perl versions supports the <$^N> variable and
-are free from such errors.
 
 There is no support for different I<PRE_CHOMP> and I<POST_CHOMP> settings 
 internally, so extraction could fail silently on wrong places.
@@ -99,7 +95,7 @@ into related research, please mail any ideas to me.
 
 =cut
 
-my ($params, $flagroot);
+my ($params, $cur_loop, %loop);
 
 sub extract {
     my ($self, $template, $document, $ext_param) = @_;
@@ -107,7 +103,9 @@ sub extract {
 
     if (!defined($self->{regex})) {
         $self->set_param($ext_param);
-        $params = { %{$flagroot} = () };
+        $params = {};
+        %loop = ();
+        $cur_loop = undef;
 
         my $parser = Template::Parser->new({
             PRE_CHOMP  => 1,
@@ -117,24 +115,39 @@ sub extract {
         $parser->{ FACTORY } = ref($self);
         $template = $$template if UNIVERSAL::isa($template, 'SCALAR');
         $template =~ s/\n+$//;
-        $template =~ s/\[% (?:\.\.\.|_) %\]/[% __ %]/g;
+        $template =~ s/\[%\s*(?:\.\.\.|_)\s*%\]/[% __ %]/g;
 
         $self->{regex} = $parser->parse($template)->{ BLOCK };
     }
 
     if ($document) {
         use re 'eval';
-        print "Regex: [$self->{regex}]\n" if $DEBUG;
+        print "Regex: [\n$self->{regex}\n]\n" if $DEBUG;
         return $document =~ /$self->{regex}/s ? $params : undef;
     }
 }
 
+sub _enter_loop {
+    if ($cur_loop and $cur_loop->{id} == $_[1]) {
+        $cur_loop->{count}++;
+        $cur_loop->{var} = {};
+    }
+    else {
+        $cur_loop = $loop{$_[1]} ||= {
+            name    => $_[0],
+            id      => $_[1],
+            count   => 0,
+            var     => {},
+        };
+    }
+}
+
 sub _validate {
+    return;
     my $vars = shift;
     my $obj;
 
-    my ($flagnode, $lastvar) = _adjust($flagroot, @_);
-    $obj = (_adjust($params, @_))[0]->{$lastvar};
+    $obj = (_adjust($params, @_))[0]->{$_[0]};
     return unless UNIVERSAL::isa($obj, 'ARRAY');
 
     @{$obj} = grep {
@@ -148,26 +161,39 @@ sub _set {
     my $obj;
 
     if (@_) {
-        my ($flagnode, $lastvar) = _adjust($flagroot, @_);
-
-        $obj = (_adjust($params, @_))[0]->{$lastvar}[
-            $flagnode->{$lastvar}{$num}++
-        ] ||= {};
+        my $cur = $loop{$_[0]};
+        my $index = $cur->{var}{$num}++; # the iteration we are currently in
+        $obj = (_traverse($params, @_))[0]->{$cur->{name}}[$index] ||= {};
     }
     else {
         $obj = $params;
     }
 
-    ($obj, $var) = _adjust($obj, $var);
+    ($obj, $var) = _adjust($obj, @$var);
+    print "adjusted to $var\n";
     $obj->{$var} = $val;
-    
     return;
 }
 
 sub _adjust {
     my ($obj, $val) = (shift, pop);
 
-    $obj = $obj->{$_} ||= {} foreach @_;
+    foreach my $var (@_) {
+        $obj = $obj->{$var} ||= {};
+    }
+    return ($obj, $val);
+}
+
+sub _traverse {
+    my $obj = shift;
+    my $val = shift;
+
+    my $depth = -1;
+    foreach my $id (reverse @_) {
+        my $var = $loop{$id}{name};
+        my $index = $cur_loop->{count};
+        $obj = $obj->{$var}[$index] ||= {};
+    }
     return ($obj, $val);
 }
 
@@ -176,7 +202,7 @@ sub _adjust {
 my $count      = 0;
 my $ext_param  = {};
 my $last_regex = '';
-my @vars;
+my $block_id;
 
 sub set_param { 
     $ext_param = $_[-1] if defined $_[-1];
@@ -186,7 +212,8 @@ sub template {
     my $reg = $_[1];
 
     $count = 0;
-    $reg =~ s/, \*\*//g; # this is safe because normal *s are escaped
+    $block_id = 0;
+    $reg =~ s/\*\*//g;
     return $reg;
 }
 
@@ -205,18 +232,15 @@ sub get {
 
     # ** is the placeholder for parent tree in foreach() 
     $last_regex = ($] >= 5.007002)
-        ? "(?{_set($_[1], \$^N, $count, **)})"
-        : "(?{_set($_[1], \$$count, $count, **)})";
-
-    push @vars, $_[1];
-
+        ? _re("_set(([$_[1]], \$^N, $count)\*\*)")
+        : _re("_set(([$_[1]], \$$count, $count)\*\*)");
     return "(.*?)";
 }
 
 sub set {
     return unless defined $ext_param;
 
-    my @parents = map {$_[1][0][$_ * 2]} (0 .. int($#{$_[1][0]}) / 2);
+    my @parents = map {$_[1][0][$_ * 2]} (0 .. $#{$_[1][0]} / 2);
     my $val = $_[1][1];
     my ($obj, $var);
     
@@ -230,7 +254,6 @@ sub set {
 
 sub textblock {
     my $ret = quotemeta($_[1]) . $last_regex;
-
     $last_regex = '';
     return $ret;
 }
@@ -238,11 +261,18 @@ sub textblock {
 sub foreach {
     my $reg = $_[4];
 
-    $last_regex = "(?{_validate([".join(',', @vars)."], $_[2])})";
-    undef @vars;
+    # find out immediate SET childrens
+    my %vars;
+    $vars{$1}++ while $reg =~ m/_set\(\(\[('\w+')[^\]]*\], \$\^N, \d+\)\*\*/g;
+    my $vars = join(', ', sort keys %vars);
 
-    $reg =~ s/\*\*/$_[2]/g; # this is safe because normal *s are escaped
-    return "(?:$reg)*";
+    # append this block's id into the _set calling chain
+    $block_id++;
+    $reg =~ s/\*\*/, $block_id\*\*/g;
+
+    return _re("_enter_loop($_[2], $block_id)") .   # sets $cur_loop
+           "(?:$reg)*" .                            # match content
+           _re("_validate([$vars], $_[2])")         # weed out partial matches
 }
 
 sub text {
@@ -255,7 +285,7 @@ sub quoted {
     foreach my $token (@{$_[1]}) {
         if ($token =~ m/^'(.+)'$/) { # nested hash traversal
             $output .= '$';
-            $output .= "{$_}" foreach split("','", $1);
+            $output .= "{$_}" foreach split(/','/, $1);
         }
         else {
             $output .= $token;
@@ -263,6 +293,9 @@ sub quoted {
     }
     return $output;
 }
+
+# handy method to add regex eval brackets
+sub _re { "(?{\n    @_\n})" }
 
 our $AUTOLOAD;
 
@@ -282,9 +315,10 @@ sub AUTOLOAD {
     }
 
     print $output;
-
     return '';
 }
+
+sub DESTROY {}
 
 1;
 

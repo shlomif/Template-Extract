@@ -1,4 +1,21 @@
 ____________________________________________________________________________
+[  7815] By: autrijus                              on 2003/08/31  19:28:28
+        Log: * This be 0.20.
+             * [% nested.variable.name %] now works.
+             * nested [% FOREACH %] blocks now work.
+             * much more robust and readable DEBUG output.
+             * commented the code somewhat so it's at least grokkable.
+	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
+[  7814] By: autrijus                              on 2003/08/31  18:27:51
+        Log: * checkpoint.
+	   ! lib/Template/Extract.pm
+____________________________________________________________________________
+[  7800] By: autrijus                              on 2003/08/30  22:43:11
+        Log: * allow [%...%], [%  ...  %], or any other combination of
+             \s characters (or lack thereof).
+	   ! lib/Template/Extract.pm
+____________________________________________________________________________
 [  7798] By: autrijus                              on 2003/08/30  21:33:11
         Log: * This be 0.11.
              * fix typo, documentation, tabs, spelling, tests, etc...

@@ -1,6 +1,6 @@
 name: Template-Extract
 module_name: Template::Extract
-version: 0.11
+version: 0.20
 abstract: Extract data structure from TT2-rendered documents
 author: Autrijus Tang (autrijus@autrijus.org)
 distribution_type: module
