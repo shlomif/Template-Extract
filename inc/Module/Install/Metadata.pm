@@ -1,6 +1,6 @@
 #line 1 "inc/Module/Install/Metadata.pm - /usr/local/lib/perl5/site_perl/5.8.1/Module/Install/Metadata.pm"
 # $File: //depot/cpan/Module-Install/lib/Module/Install/Metadata.pm $ $Author: autrijus $
-# $Revision: #26 $ $Change: 1777 $ $DateTime: 2003/10/13 02:25:45 $ vim: expandtab shiftwidth=4
+# $Revision: #27 $ $Change: 1778 $ $DateTime: 2003/10/17 17:37:55 $ vim: expandtab shiftwidth=4
 
 package Module::Install::Metadata;
 use Module::Install::Base; @ISA = qw(Module::Install::Base);

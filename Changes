@@ -1,4 +1,13 @@
 ____________________________________________________________________________
+[  8520] By: autrijus                              on 2003/10/21  22:49:57
+        Log: * This be 0.31.
+             * New flag $EXACT to control whether partial documents
+             should match. (defaults to 0 for backward compatibility)
+             * Tatsuhiko Miyagawa pointed out that [% FOREACH %] blocks
+             fail to match prematurely because it can match zero times.
+             Now outermost foreach blocks must match at least once.
+	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
 [  8495] By: autrijus                              on 2003/10/20  01:01:46
         Log: * This be 0.30.
              * This module is no longer experimental. :)

@@ -1,6 +1,6 @@
 #line 1 "inc/Module/Install/Makefile.pm - /usr/local/lib/perl5/site_perl/5.8.1/Module/Install/Makefile.pm"
-# $File: //depot/cpan/Module-Install/lib/Module/Install/Makefile.pm $ $Author: ingy $
-# $Revision: #46 $ $Change: 1765 $ $DateTime: 2003/10/04 15:42:05 $ vim: expandtab shiftwidth=4
+# $File: //depot/cpan/Module-Install/lib/Module/Install/Makefile.pm $ $Author: autrijus $
+# $Revision: #47 $ $Change: 1778 $ $DateTime: 2003/10/17 17:37:55 $ vim: expandtab shiftwidth=4
 
 package Module::Install::Makefile;
 use Module::Install::Base; @ISA = qw(Module::Install::Base);
@@ -63,6 +63,7 @@ sub write {
     if ( eval($ExtUtils::MakeMaker::VERSION) > 6.17 ) {
 	$args->{SIGN} = 1 if $self->sign;
     }
+    delete $args->{SIGN} unless $self->is_admin;
 
     # merge both kinds of requires into prereq_pm
     my $prereq = ($args->{PREREQ_PM} ||= {});
@@ -123,4 +124,4 @@ sub postamble {
 
 __END__
 
-#line 255
+#line 256

@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # $File: //member/autrijus/Template-Extract/Makefile.PL $ $Author: autrijus $
-# $Revision: #1 $ $Change: 7794 $ $DateTime: 2003/08/30 17:01:35 $
+# $Revision: #2 $ $Change: 8521 $ $DateTime: 2003/10/21 22:52:33 $
 
 use 5.006;
 use inc::Module::Install;
@@ -13,6 +13,7 @@ WriteMakefile (
     NAME	    => 'Template::Extract',
     ABSTRACT	    => 'Extract data structure from TT2-rendered documents',
     VERSION_FROM    => 'lib/Template/Extract.pm',
+    SIGN	    => 1,
     PREREQ_PM       => {
         'Template'  => '2.00',
     },

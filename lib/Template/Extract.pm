@@ -1,15 +1,15 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #12 $ $Change: 8495 $ $DateTime: 2003/10/20 01:01:46 $ vim: expandtab shiftwidth=4
+# $Revision: #13 $ $Change: 8520 $ $DateTime: 2003/10/21 22:49:57 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.30';
+$Template::Extract::VERSION = '0.31';
 
 use 5.006;
 use strict;
 use warnings;
 use base 'Template';
 use Template::Parser;
-our $DEBUG;
+our ($DEBUG, $EXACT);
 
 =head1 NAME
 
@@ -17,8 +17,8 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.30 of Template::Extract, released
-October 20, 2003.
+This document describes version 0.31 of Template::Extract, released
+October 22, 2003.
 
 =head1 SYNOPSIS
 
@@ -79,6 +79,10 @@ C<[% __ %]> are also accepted.
 You may set C<$Template::Extract::DEBUG> to a true value to display
 generated regular expressions.
 
+The extraction process defaults to succeed even with a partial match.
+To match the entire document only, set C<$Template::Extract::EXACT> to
+a true value.
+
 =head1 CAVEATS
 
 Currently, the C<extract> method only handles C<[% GET %]>,
@@ -87,6 +91,10 @@ C<[% CALL %]> and C<[% SWITCH %]> blocks are next to impossible to
 extract correctly.
 
 C<[% SET key = "value" %]> only works for simple scalar values.
+
+Outermost C<[% FOREACH %]> blocks must occur at least once, but
+inner ones may occur zero times.  This is so that the regex optimizer
+will not fail prematurely.
 
 There is no support for different I<PRE_CHOMP> and I<POST_CHOMP> settings 
 internally, so extraction could fail silently on wrong places.
@@ -214,7 +222,10 @@ sub _re { "(?{\n    @_\n})" }
 
 sub template {
     my $regex = $_[1];
+
     $regex =~ s/\*\*//g;
+    $regex =~ s/\+\+/+/g;
+    $regex = "^$regex\$" if $EXACT;
 
     # Deal with backtracking here -- substitute repeated occurences of
     # the variable into backtracking sequences like (\1)
@@ -256,10 +267,11 @@ sub foreach {
     # append this block's id into the _get calling chain
     ++$block_id;
     ++$paren_id;
-    $regex =~ s/\*\*/, $block_id\*\*/g;
+    $regex =~ s/\*\*/, $block_id**/g;
+    $regex =~ s/\+\+/*/g;
 
     return _re("_enter_loop($_[2], $block_id)") .    # sets $cur_loop
-           "(?:$regex)*()" .                         # match content
+           "(?:$regex)++()" .                        # match content
            _re("_ext(([[$_[2],[$vars]]], \\'validate', $paren_id)**)");
            # weed out partial matches
 }
