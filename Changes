@@ -1,4 +1,9 @@
 ____________________________________________________________________________
+[  7820] By: autrijus                              on 2003/09/01  10:11:13
+        Log: * This be 0.21.
+             * oops, left debug statements and "use YAML" in.
+	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
 [  7815] By: autrijus                              on 2003/08/31  19:28:28
         Log: * This be 0.20.
              * [% nested.variable.name %] now works.

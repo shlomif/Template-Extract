@@ -1,8 +1,8 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #5 $ $Change: 7815 $ $DateTime: 2003/08/31 19:28:28 $ vim: expandtab shiftwidth=4
+# $Revision: #6 $ $Change: 7820 $ $DateTime: 2003/09/01 10:11:13 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.20';
+$Template::Extract::VERSION = '0.21';
 
 use 5.006;
 use strict;
@@ -17,7 +17,7 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.20 of Template::Extract, released
+This document describes version 0.21 of Template::Extract, released
 September 1, 2003.
 
 =head1 SYNOPSIS
@@ -170,7 +170,6 @@ sub _set {
     }
 
     ($obj, $var) = _adjust($obj, @$var);
-    print "adjusted to $var\n";
     $obj->{$var} = $val;
     return;
 }

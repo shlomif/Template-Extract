@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # $File: //member/autrijus/Template-Extract/t/1-basic.t $ $Author: autrijus $
-# $Revision: #3 $ $Change: 7815 $ $DateTime: 2003/08/31 19:28:28 $ vim: expandtab shiftwidth=4
+# $Revision: #4 $ $Change: 7820 $ $DateTime: 2003/09/01 10:11:13 $ vim: expandtab shiftwidth=4
 
 use strict;
 use Test::More tests => 5;
@@ -78,10 +78,11 @@ this text is ignored, too.</li></ul>
 this text is ignored, also.</li></ol>
 .
 
-$Template::Extract::DEBUG++;
 $result = $obj->extract($template, $document);
-use YAML;
-print YAML::Dump($result);
+
+#$Template::Extract::DEBUG++;
+#use YAML;
+#print YAML::Dump($result);
 
 is_deeply($result, {
     'record' => [ { 
