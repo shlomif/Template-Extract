@@ -1,15 +1,16 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #19 $ $Change: 9634 $ $DateTime: 2004/01/09 17:39:27 $ vim: expandtab shiftwidth=4
+# $Revision: #20 $ $Change: 10075 $ $DateTime: 2004/02/16 16:50:48 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.35';
+$Template::Extract::VERSION = '0.36';
 
 use 5.006;
 use strict;
 use warnings;
-use base 'Template';
-use Template::Parser;
-our ($DEBUG, $EXACT);
+use constant RUN_CLASS      => (__PACKAGE__ . '::Run');
+use constant COMPILE_CLASS  => (__PACKAGE__ . '::Compile');
+
+our ( $DEBUG, $EXACT );
 
 =head1 NAME
 
@@ -17,8 +18,8 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.35 of Template::Extract, released
-January 10, 2004.
+This document describes version 0.36 of Template::Extract, released
+February 17, 2004.
 
 =head1 SYNOPSIS
 
@@ -47,12 +48,16 @@ January 10, 2004.
 
 =head1 DESCRIPTION
 
-This module is a subclass of the B<Template> toolkit, with added template
-extraction functionality.  It can take a rendered document and its template
-together, and get the original data structure back, effectively reversing
-the C<process> function.
+This module adds template extraction functionality to the B<Template>
+toolkit.  It can take a rendered document and its template together, and
+get the original data structure back, effectively reversing the
+C<Template::process> function.
 
 =head1 METHODS
+
+=head2 new()
+
+Constructor.  Currently takes no parameters.
 
 =head2 extract($template, $document, \%values)
 
@@ -85,6 +90,18 @@ The extraction process defaults to succeed even with a partial match.
 To match the entire document only, set C<$Template::Extract::EXACT> to
 a true value.
 
+=head2 compile($template)
+
+Use B<Template::Extract::Compile> to perform the first phase of
+C<extract>, by returning the regular expression compiled from
+C<$template>.
+
+=head2 run($regex, $document, \%values)
+
+Use B<Template::Extract::Run> to perform the second phase of
+C<extract>, by applying the regular expression on C<$document>
+and returning the resulting C<\%values>.
+
 =head1 CAVEATS
 
 Currently, the C<extract> method only supports C<[% GET %]>,
@@ -110,301 +127,56 @@ into related research, please mail any ideas to me.
 
 =cut
 
-my ( %loop, $cur_loop, $paren_id, $block_id, $data, @set );
+sub new {
+    my $self = shift;
+    my $class = ref($self) || $self;
+
+    my $run_class = $class->RUN_CLASS;
+    my $compile_class = $class->COMPILE_CLASS;
+
+    foreach my $subclass ($run_class, $compile_class) {
+        no strict 'refs';
+        $class->load($subclass);
+        *{"$subclass\::DEBUG"} = *DEBUG;
+        *{"$subclass\::EXACT"} = *EXACT;
+    }
+
+    bless({
+        run_object     => $run_class->new(@_),
+        compile_object => $compile_class->new(@_),
+    }, $class);
+}
+
+sub load {
+    my ($self, $class) = @_;
+    $class =~ s{::}{/}g;
+    require "$class.pm";
+}
 
 sub extract {
-    my ( $self, $template, $document, $ext_data ) = @_;
+    my $self = shift;
+    my $template = shift;
 
-    $self->_init($ext_data);
-
-    if ( defined $template ) {
-	my $parser = Template::Parser->new(
-	    {
-                PRE_CHOMP  => 1,
-		POST_CHOMP => 1,
-	    }
-	);
-
-	$parser->{FACTORY} = ref($self);
-	$template = $$template if UNIVERSAL::isa( $template, 'SCALAR' );
-	$template =~ s/\n+$//;
-	$template =~ s/\[%\s*(?:\.\.\.|_|__)\s*%\]/[% \/.*?\/ %]/g;
-	$template =~ s/\[%\s*(\/.*?\/)\s*%\]/'[% "' . quotemeta($1) . '" %]'/eg;
-
-	$self->{regex} = $parser->parse($template)->{BLOCK};
-    }
-
-    defined( $document )      or return undef;
-    defined( $self->{regex} ) or return undef;
-
-    {
-        use re 'eval';
-        print "Regex: [\n$self->{regex}\n]\n" if $DEBUG;
-        return $data if $document =~ /$self->{regex}/s;
-    }
-
-    return undef;
+    $self->run( $self->compile($template), @_ );
 }
 
-sub _enter_loop {
-    $cur_loop = $loop{ $_[1] } ||= {
-	name  => $_[0],
-	id    => $_[1],
-	count => -1,
-    };
-    $cur_loop->{count}++;
-    $cur_loop->{var} = {};
-    $cur_loop->{pos} = {};
+sub compile {
+    my $self = shift;
+    $self->{compile_object}->compile(@_);
 }
 
-sub _leave_loop {
-    my ($obj, $key, $vars) = @_;
-
-    ref($obj) eq 'HASH' or return;
-    my $old = $obj->{$key} if exists $obj->{$key};
-    ref($old) eq 'ARRAY' or return;
-
-    print "Validate: [$old $key @$vars]\n" if $DEBUG;
-
-    my @new;
-
-    OUTER:
-    foreach my $entry (@$old) {
-	next unless %$entry;
-	foreach my $var (@$vars) {
-	    # If it's a foreach, it needs to not match or match something.
-	    if (ref($var)) {
-		next if !exists($entry->{$$var}) or @{$entry->{$$var}};
-	    }
-	    else {
-		next if exists($entry->{$var});
-	    }
-	    next OUTER; # failed!
-	}
-	push @new, $entry;
-    }
-
-    delete $_[0]{$key} unless @$old = @new;
+sub run {
+    my $self = shift;
+    $self->{run_object}->run(@_);
 }
-
-sub _adjust {
-    my ( $obj, $val ) = ( shift, pop );
-
-    foreach my $var (@_) {
-	$obj = $obj->{$var} ||= {};
-    }
-    return ( $obj, $val );
-}
-
-sub _traverse {
-    my ( $obj, $val ) = ( shift, shift );
-
-    my $depth = -1;
-    while (my $id = pop(@_)) {
-	my $var   = $loop{$id}{name};
-        my $index = $loop{$_[-1] || $val}{count};
-	$obj = $obj->{$var}[$index] ||= {};
-    }
-    return $obj;
-}
-
-# initialize temporary variables
-sub _init {
-    $paren_id = 0;
-    $block_id = 0;
-    %loop     = ();
-    @set      = ();
-    $cur_loop = undef;
-    $data     = $_[1] || {};
-}
-
-# utility function to add regex eval brackets
-sub _re { "(?{\n    @_\n})" }
-
-# --- Factory API implementation begins here ---
-
-sub template {
-    my $regex = $_[1];
-
-    $regex =~ s/\*\*//g;
-    $regex =~ s/\+\+/+/g;
-    $regex = "^$regex\$" if $EXACT;
-
-    # Deal with backtracking here -- substitute repeated occurences of
-    # the variable into backtracking sequences like (\1)
-    my %seen;
-    $regex =~ s{(                       # entire sequence [1]
-        \(\.\*\?\)                      #   matching regex
-        \(\?\{                          #   post-matching regex...
-            \s*                         #     whitespaces
-            _ext\(                      #     capturing handler...
-                \(                      #       inner cluster of...
-                    \[ (.+?) \],\s*     #         var name [2]
-                    \$.*?,\s*           #         dollar with ^N/counter
-                    (\d+)               #         counter [3]
-                \)                      #       ...end inner cluster
-                (.*?)                   #       outer loop stack [4]
-            \)                          #     ...end capturing handler
-            \s*                         #     whitespaces
-        \}\)                            #   ...end post-maching regex
-    )}{
-        if ($seen{$2,$4}) {             # if var reoccured in the same loop
-            "(\\$seen{$2,$4})"          #   replace it with backtracker
-        } else {                        # otherwise
-            $seen{$2,$4} = $3;          #   register this var's counter
-            $1;                         #   and preserve the sequence 
-        }
-    }gex;
-    return $regex;
-}
-
-sub foreach {
-    my $regex = $_[4];
-
-    # find out immediate children
-    my %vars = reverse (
-	$regex =~ /_ext\(\(\[(\[?)('\w+').*?\], [^,]+, \d+\)\*\*/g
-    );
-    my $vars = join( ',', map { $vars{$_} ? "\\$_" : $_ } sort keys %vars );
-
-    # append this block's id into the _get calling chain
-    ++$block_id;
-    ++$paren_id;
-    $regex =~ s/\*\*/, $block_id**/g;
-    $regex =~ s/\+\+/*/g;
-
-    return (
-        # sets $cur_loop
-        _re("_enter_loop($_[2], $block_id)") .
-        # match loop content
-        "(?:\\n*?$regex)++()" .
-        # weed out partial matches
-        _re("_ext(([[$_[2],[$vars]]], \\'leave_loop', $paren_id)**)") .
-        # optional, implicit newline
-        "\\n*?"
-    );
-}
-
-sub get {
-    return "(?:$1)" if $_[1] =~ m{^/(.*)/$};
-
-    ++$paren_id;
-
-    # ** is the placeholder for parent loop ids
-    return "(.*?)" . _re("_ext(([$_[1]], \$$paren_id, $paren_id)\*\*)");
-}
-
-sub set {
-    ++$paren_id;
-
-    my $val = $_[1][1];
-    $val =~ s/^'(.*)'\z/$1/;
-    push(@set, $val);
-
-    my $parents = join(
-        ',', map {
-            $_[1][0][ $_ * 2 ]
-        } ( 0 .. $#{ $_[1][0] } / 2 )
-    );
-    return '()' . _re("_ext(([$parents], \\$#set, $paren_id)\*\*)");
-}
-
-sub _ext {
-    my ( $var, $val, $num ) = splice( @_, 0, 3 );
-    my $obj = $data;
-
-    if (@_) {
-	print "Ext: [ $$val with $num on $-[$num]]\n" if ref($val) and $DEBUG;
-
-        # fetch current loop structure
-	my $cur = $loop{ $_[0] };
-	# if pos() changed, increment the iteration counter
-	$cur->{var}{$num}++ if ( ( $cur->{pos}{$num} ||= -1 ) != $-[$num] )
-	    or ref $val and $$val eq 'leave_loop';
-        # remember pos()
-	$cur->{pos}{$num} = $-[$num];
-
-	my $iteration = $cur->{var}{$num} - 1;
-	$obj = _traverse( $data, @_ )->{ $cur->{name} }[$iteration] ||= {};
-    }
-
-    ( $obj, $var ) = _adjust( $obj, @$var );
-
-    if (!ref($val)) {
-        $obj->{$var} = $val;
-    }
-    elsif ($$val eq 'leave_loop') {
-        _leave_loop($obj, @$var);
-    }
-    else {
-        $obj->{$var} = $set[$$val];
-    }
-}
-
-sub textblock {
-    return quotemeta( $_[1] );
-}
-
-sub block {
-    my $rv = '';
-    foreach my $chunk ( map "$_", @{$_[1]||[]} ) {
-        $chunk =~ s/^#line .*\n//;
-        $rv .= $chunk;
-    }
-    return $rv;
-}
-
-sub quoted {
-    my $rv = '';
-
-    foreach my $token ( @{ $_[1] } ) {
-	if ( $token =~ m/^'(.+)'$/ ) {    # nested hash traversal
-	    $rv .= '$';
-	    $rv .= "{$_}" foreach split( /','/, $1 );
-	}
-	else {
-	    $rv .= $token;
-	}
-    }
-
-    return $rv;
-}
-
-sub ident {
-    return join( ',', map { $_[1][ $_ * 2 ] } ( 0 .. $#{ $_[1] } / 2 ) );
-}
-
-sub text {
-    return $_[1];
-}
-
-# debug routine to catch unsupported directives
-sub AUTOLOAD {
-    $DEBUG or return;
-
-    require Data::Dumper;
-    $Data::Dumper::Indent = 1;
-
-    our $AUTOLOAD;
-    print "\n$AUTOLOAD -";
-
-    for my $arg ( 1 .. $#_ ) {
-	print "\n    [$arg]: ";
-	print ref( $_[$arg] )
-	  ? Data::Dumper->Dump( [ $_[$arg] ], ['__'] )
-	  : $_[$arg];
-    }
-
-    return '';
-}
-
-sub DESTROY { }
 
 1;
 
 =head1 SEE ALSO
 
-L<Template>, L<Template::Generate>, L<Template::Parser>
+L<Template::Extract::Compile>, L<Template::Extract::Run>
+
+L<Template>, L<Template::Generate>
 
 Simon Cozens's introduction to this module, in O'Reilly's I<Spidering Hacks>:
 L<http://www.oreillynet.com/pub/a/javascript/excerpt/spiderhacks_chap01/index.html>

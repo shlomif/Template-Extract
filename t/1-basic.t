@@ -1,16 +1,15 @@
 #!/usr/bin/perl
 # $File: //member/autrijus/Template-Extract/t/1-basic.t $ $Author: autrijus $
-# $Revision: #12 $ $Change: 9564 $ $DateTime: 2004/01/03 08:54:59 $ vim: expandtab shiftwidth=4
+# $Revision: #13 $ $Change: 10075 $ $DateTime: 2004/02/16 16:50:48 $ vim: expandtab shiftwidth=4
 
 use strict;
-use Test::More tests => 13;
+use Test::More tests => 12;
 
 use_ok('Template::Extract');
 
 my ($template, $document, $data);
 
 my $obj = Template::Extract->new;
-isa_ok($obj, 'Template');
 isa_ok($obj, 'Template::Extract');
 
 $template = << '.';
