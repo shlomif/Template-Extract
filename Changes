@@ -1,4 +1,15 @@
 ____________________________________________________________________________
+[  7822] By: autrijus                              on 2003/09/01  12:53:35
+        Log: * This be 0.22.
+             * properly handles backtracking, so two [% var %]s are
+	       guaranteed
+             to match the same sequence.
+             * much more robust post-matching handlers, so the same
+	       variable
+             matched at the same location (but are of different length)
+             will not create a new item in the enclosing FOREACH array.
+	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
 [  7820] By: autrijus                              on 2003/09/01  10:11:13
         Log: * This be 0.21.
              * oops, left debug statements and "use YAML" in.

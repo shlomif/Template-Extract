@@ -1,8 +1,8 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #6 $ $Change: 7820 $ $DateTime: 2003/09/01 10:11:13 $ vim: expandtab shiftwidth=4
+# $Revision: #7 $ $Change: 7822 $ $DateTime: 2003/09/01 12:53:35 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.21';
+$Template::Extract::VERSION = '0.22';
 
 use 5.006;
 use strict;
@@ -17,7 +17,7 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.21 of Template::Extract, released
+This document describes version 0.22 of Template::Extract, released
 September 1, 2003.
 
 =head1 SYNOPSIS
@@ -131,6 +131,7 @@ sub _enter_loop {
     if ($cur_loop and $cur_loop->{id} == $_[1]) {
         $cur_loop->{count}++;
         $cur_loop->{var} = {};
+        $cur_loop->{idx} = {};
     }
     else {
         $cur_loop = $loop{$_[1]} ||= {
@@ -162,7 +163,9 @@ sub _set {
 
     if (@_) {
         my $cur = $loop{$_[0]};
-        my $index = $cur->{var}{$num}++; # the iteration we are currently in
+        $cur->{var}{$num}++ unless ($cur->{pos}{$num} ||= -1) == $-[$num];
+        $cur->{pos}{$num} = $-[$num];
+        my $index = $cur->{var}{$num} - 1; # the iteration we are currently in
         $obj = (_traverse($params, @_))[0]->{$cur->{name}}[$index] ||= {};
     }
     else {
@@ -213,6 +216,32 @@ sub template {
     $count = 0;
     $block_id = 0;
     $reg =~ s/\*\*//g;
+
+    # Deal with backtracking here -- substitute repeated occurences of 
+    # the variable into backtracking sequences like (\1)
+    my %seen;
+    $reg =~ s{(                         # entire GET sequence [1]
+        \(\.\*\?\)                      #   matching regex
+        \(\?\{                          #   post-matching regex...
+            \s*                         #     whitespaces
+            _set\(                      #     capturing handler...
+                \(                      #       inner cluster of...
+                    \[ (.+?) \],\s*     #         var name [2]
+                    \$.*?,\s*           #         dollar with ^N/counter
+                    (\d+)               #         counter [3]
+                \)                      #       ...end inner cluster
+                (.*?)                   #       outer loop stack [4]
+            \)                          #     ...end capturing handler
+            \s*                         #     whitespaces
+        \}\)                            #   ...end post-maching regex
+    )}{
+       if ($seen{"$2$4"}) {             # if var reoccured in the same loop
+           "(\\$seen{$2.$4})";          #   replace it with backtracker
+       } else {                         # otherwise
+           $seen{"$2$4"} = $3;          #   register this var's counter
+           $1;                          #   and preserve the GET sequence 
+       }
+    }gex;
     return $reg;
 }
 
@@ -225,15 +254,19 @@ sub ident {
 }
 
 sub get {
-    return '.*?' if ($_[1] eq "'__'");
-
-    ++$count; # which capturing parenthesis is this?
-
-    # ** is the placeholder for parent tree in foreach() 
-    $last_regex = ($] >= 5.007002)
-        ? _re("_set(([$_[1]], \$^N, $count)\*\*)")
-        : _re("_set(([$_[1]], \$$count, $count)\*\*)");
-    return "(.*?)";
+    my $rv = $last_regex . '.*?';
+    if ($_[1] eq "'__'") {
+        $last_regex = '';
+    }
+    else {
+        ++$count; # which capturing parenthesis is this?
+        # ** is the placeholder for parent tree in foreach() 
+        $rv = $last_regex . "(.*?)";
+        $last_regex = ($] >= 5.007002)
+            ? _re("_set(([$_[1]], \$^N, $count)\*\*)")
+            : _re("_set(([$_[1]], \$$count, $count)\*\*)");
+    }
+    return $rv;
 }
 
 sub set {
@@ -252,7 +285,7 @@ sub set {
 }
 
 sub textblock {
-    my $ret = quotemeta($_[1]) . $last_regex;
+    my $ret = $last_regex . quotemeta($_[1]);
     $last_regex = '';
     return $ret;
 }

@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 # $File: //member/autrijus/Template-Extract/t/1-basic.t $ $Author: autrijus $
-# $Revision: #4 $ $Change: 7820 $ $DateTime: 2003/09/01 10:11:13 $ vim: expandtab shiftwidth=4
+# $Revision: #5 $ $Change: 7822 $ $DateTime: 2003/09/01 12:53:35 $ vim: expandtab shiftwidth=4
 
 use strict;
-use Test::More tests => 5;
+use Test::More tests => 6;
 
 use_ok('Template::Extract');
 
@@ -78,11 +78,9 @@ this text is ignored, too.</li></ul>
 this text is ignored, also.</li></ol>
 .
 
-$result = $obj->extract($template, $document);
-
 #$Template::Extract::DEBUG++;
-#use YAML;
-#print YAML::Dump($result);
+$result = $obj->extract($template, $document);
+#use YAML; print YAML::Dump($result);
 
 is_deeply($result, {
     'record' => [ { 
@@ -105,4 +103,26 @@ is_deeply($result, {
         'title'     => 'Where do you want...',
     } ]
 } } qw(Foo Bar)] }, 'extract() with two nested and one extra FOREACH');
+
+$obj = Template::Extract->new;
+
+$template = << '.';
+_[% C %][% D %]_
+_[% D %][% E %]_
+_[% E %][% D %][% C %]_
+.
+
+$document = << '.';
+_doeray_
+_rayme_
+_meraydoe_
+.
+
+$result = $obj->extract($template, $document);
+
+is_deeply($result, {
+    'C' => 'doe',
+    'D' => 'ray',
+    'E' => 'me'
+}, 'extract() with backtracking');
 
