@@ -1,4 +1,9 @@
 ____________________________________________________________________________
+[  7798] By: autrijus                              on 2003/08/30  21:33:11
+        Log: * This be 0.11.
+             * fix typo, documentation, tabs, spelling, tests, etc...
+	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
 [  7795] By: autrijus                              on 2003/08/30  17:02:31
         Log: * This be 0.10, initial release.
              * add manifest.

@@ -1,19 +1,24 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #1 $ $Change: 7794 $ $DateTime: 2003/08/30 17:01:35 $
+# $Revision: #2 $ $Change: 7798 $ $DateTime: 2003/08/30 21:33:11 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
+$Template::Extract::VERSION = '0.11';
+
 use 5.006;
-
-$Template::Extract::VERSION = '0.10';
-
 use strict;
 use warnings;
+use base 'Template';
 use Template::Parser;
-use base qw/Template/;
+our $DEBUG;
 
 =head1 NAME
 
 Template::Extract - Extract data structure from TT2-rendered documents
+
+=head1 VERSION
+
+This document describes version 0.11 of Template::Extract, released
+August 31, 2003.
 
 =head1 SYNOPSIS
 
@@ -37,68 +42,71 @@ Template::Extract - Extract data structure from TT2-rendered documents
     .
 
     print Data::Dumper::Dumper(
-	$obj->extract($template, $document)
+        $obj->extract($template, $document)
     );
 
 =head1 DESCRIPTION
 
-This module is a subclass of the standard I<Template> toolkit, with 
-added template extraction functionality, which means you can take
-a I<process()>ed document and its template together, and get the
-original data structure back.
+This module is a subclass of the B<Template> toolkit, with added template
+extraction functionality.  It can take a rendered document and its template
+together, and get the original data structure back, effectively reversing
+the C<process> function.
 
-The C<extract> method takes three arguments: the template file itself
-(leave it undefined if already initialized), a scalar to match against
-it, and an optional external hash reference to store the extracted
-values.
+This module is considered experimental.  If you just wish to extract
+RSS-type information out of a HTML document, B<WWW::SherlockSearch>
+may be a more robust solution.
+
+=head1 METHODS
+
+=head2 $obj->extract($template, $document, \%values)
+
+This method takes three arguments: the template string, or a reference to
+it; a document string to match against; and an optional hash reference to
+store the extracted values into.
 
 Extraction is done by transforming the result from I<Template::Parser>
 to a highly esoteric regular expression, which utilizes the (?{...}) 
 construct to insert matched parameters into the hash reference.
 
-The special C<[% ... %]> directive is understood as C<(?:[\x00-\xff]*?)>
-in regex terms, i.e. "ignore everything between this identifier and
-the next".  For backward compatibility reasons, C<[% _ %]> is also
-accepted (but deprecated).
+The special C<[% ... %]> directive is taken as C</.*?/s> in regex terms,
+i.e. "ignore everything (as short as possible) between this identifier
+and the next one".  For backward compatibility, C<[% _ %]> and C<[% __ %]>
+are also accepted (but deprecated).
 
-This module is considered experimental.  If you just want to extract
-RSS-type information out of a HTML document, B<WWW::SherlockSearch>
-may be a more robust solution.
+You may set C<$Template::Extract::DEBUG> to a true value to display
+generated regular expressions.
 
 =head1 CAVEATS
 
-Currently, the extract function only understands C<[% GET %]>, C<[% SET %]>
-and C<[% FOREACH %]> directives, since C<[% WHILE %]>, C<[% CALL %]> and
-C<[% SWITCH %]> blocks are next to impossible to extract correctly.
+Currently, the C<extract> method only handles C<[% GET %]>,
+C<[% SET %]> and C<[% FOREACH %]> directives, because C<[% WHILE %]>,
+C<[% CALL %]> and C<[% SWITCH %]> blocks are next to impossible to
+extract correctly.
 
-Its companion class, B<Template::Generate>, is still missing; it's
-supposed to take a data structure and the preferred rendering, and
-automagically generate a template to do the transformation. If you
-are into related research, please mail any ideas to me.
-
-=head1 BUGS
-
-Nested capturing will sometimes suffer from off-by-one errors with perl 
-v5.7.1 or earlier; later versions supports the <$^N> variable and is
-exempt from such errors.
+With perl v5.7.1 or earlier, nested capturing may sometimes suffer from
+off-by-one errors.  Later perl versions supports the <$^N> variable and
+are free from such errors.
 
 There is no support for different I<PRE_CHOMP> and I<POST_CHOMP> settings 
 internally, so extraction could fail silently on wrong places.
 
+=head1 NOTES
+
+This module's companion class, B<Template::Generate>, is still missing;
+it's supposed to take a data structure and the preferred rendering, and
+automagically generate a template to do the transformation. If you are
+into related research, please mail any ideas to me.
+
 =cut
 
 my ($params, $flagroot);
-
-sub generate {
-    die 'Template generation is not yet accomplished.';
-}
 
 sub extract {
     my ($self, $template, $document, $ext_param) = @_;
     my ($output, $error);
 
     if (!defined($self->{regex})) {
-        Template::Extract->set_param($ext_param);
+        $self->set_param($ext_param);
         $params = { %{$flagroot} = () };
 
         my $parser = Template::Parser->new({
@@ -107,16 +115,16 @@ sub extract {
         });
     
         $parser->{ FACTORY } = ref($self);
-	$template = $$template if UNIVERSAL::isa($template, 'SCALAR');
-	$template =~ s/\n+$//;
-	$template =~ s/\[% (?:\.\.\.|_) %\]/[% __ %]/g;
+        $template = $$template if UNIVERSAL::isa($template, 'SCALAR');
+        $template =~ s/\n+$//;
+        $template =~ s/\[% (?:\.\.\.|_) %\]/[% __ %]/g;
 
         $self->{regex} = $parser->parse($template)->{ BLOCK };
     }
 
     if ($document) {
         use re 'eval';
-        print "Regex: [$self->{regex}]\n" if $::DEBUG;
+        print "Regex: [$self->{regex}]\n" if $DEBUG;
         return $document =~ /$self->{regex}/s ? $params : undef;
     }
 }
@@ -130,8 +138,8 @@ sub _validate {
     return unless UNIVERSAL::isa($obj, 'ARRAY');
 
     @{$obj} = grep {
-	my $entry = $_;
- 	scalar (grep { exists $entry->{$_} } @{$vars}) == scalar @{$vars};
+        my $entry = $_;
+        scalar (grep { exists $entry->{$_} } @{$vars}) == scalar @{$vars};
     } @{$obj};
 }
 
@@ -143,8 +151,8 @@ sub _set {
         my ($flagnode, $lastvar) = _adjust($flagroot, @_);
 
         $obj = (_adjust($params, @_))[0]->{$lastvar}[
-	    $flagnode->{$lastvar}{$num}++
-	] ||= {};
+            $flagnode->{$lastvar}{$num}++
+        ] ||= {};
     }
     else {
         $obj = $params;
@@ -163,7 +171,7 @@ sub _adjust {
     return ($obj, $val);
 }
 
-# The worker methods
+# Factory API implementation begins here
 
 my $count      = 0;
 my $ext_param  = {};
@@ -197,8 +205,8 @@ sub get {
 
     # ** is the placeholder for parent tree in foreach() 
     $last_regex = ($] >= 5.007002)
-	? "(?{_set($_[1], \$^N, $count, **)})"
-	: "(?{_set($_[1], \$$count, $count, **)})";
+        ? "(?{_set($_[1], \$^N, $count, **)})"
+        : "(?{_set($_[1], \$$count, $count, **)})";
 
     push @vars, $_[1];
 
@@ -214,7 +222,7 @@ sub set {
     
     $_ = substr($_, 1, -1) foreach @parents;
 
-    ($obj, $var) = Template::Extract::_adjust($ext_param, @parents);
+    ($obj, $var) = _adjust($ext_param, @parents);
     $obj->{$var} = $val;
     
     return '';
@@ -259,7 +267,7 @@ sub quoted {
 our $AUTOLOAD;
 
 sub AUTOLOAD {
-    return unless $::DEBUG;
+    return unless $DEBUG;
 
     require Data::Dumper;
     $Data::Dumper::Indent = 1;
@@ -269,8 +277,8 @@ sub AUTOLOAD {
     for my $arg (1..$#_) {
         $output .= "\n    [$arg]: ";
         $output .= ref($_[$arg]) 
-	    ? Data::Dumper->Dump([$_[$arg]], ['__']) 
-	    : $_[$arg];
+            ? Data::Dumper->Dump([$_[$arg]], ['__']) 
+            : $_[$arg];
     }
 
     print $output;
