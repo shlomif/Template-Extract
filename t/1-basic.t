@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 # $File: //member/autrijus/Template-Extract/t/1-basic.t $ $Author: autrijus $
-# $Revision: #5 $ $Change: 7822 $ $DateTime: 2003/09/01 12:53:35 $ vim: expandtab shiftwidth=4
+# $Revision: #6 $ $Change: 7842 $ $DateTime: 2003/09/02 17:01:38 $ vim: expandtab shiftwidth=4
 
 use strict;
 use Test::More tests => 6;
 
 use_ok('Template::Extract');
 
-my ($obj, $template, $document, $result);
+my ($obj, $template, $document, $data);
 
 $obj = Template::Extract->new;
 isa_ok($obj, 'Template');
@@ -28,9 +28,9 @@ this text is ignored.</li>
 this text is ignored, too.</li></ul>
 .
 
-$result = $obj->extract($template, $document);
+$data = $obj->extract($template, $document);
 
-is_deeply($result, {
+is_deeply($data, {
     'record' => [ { 
         'rating'    => 'A+',
         'comment'   => 'nice',
@@ -79,10 +79,10 @@ this text is ignored, also.</li></ol>
 .
 
 #$Template::Extract::DEBUG++;
-$result = $obj->extract($template, $document);
-#use YAML; print YAML::Dump($result);
+$data = $obj->extract($template, $document);
+#use YAML; print YAML::Dump($data);
 
-is_deeply($result, {
+is_deeply($data, {
     'record' => [ { 
         'rating'    => '+++++',
         'comment'   => 'cool',
@@ -118,9 +118,9 @@ _rayme_
 _meraydoe_
 .
 
-$result = $obj->extract($template, $document);
+$data = $obj->extract($template, $document);
 
-is_deeply($result, {
+is_deeply($data, {
     'C' => 'doe',
     'D' => 'ray',
     'E' => 'me'

@@ -1,4 +1,14 @@
 ____________________________________________________________________________
+[  7842] By: autrijus                              on 2003/09/02  17:01:38
+        Log: * This be 0.24.
+             * now Template::Generate is released, modify relevant PODs.
+             * unify nomenclature: ($data, $template, $document).
+	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
+[  7840] By: autrijus                              on 2003/09/02  14:17:39
+        Log: * some more style cleanup.
+	   ! lib/Template/Extract.pm
+____________________________________________________________________________
 [  7838] By: autrijus                              on 2003/09/02  14:09:43
         Log: * This be 0.23.
              * no API changes, but seriously tidied up the internals.

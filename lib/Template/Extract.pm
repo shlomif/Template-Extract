@@ -1,8 +1,8 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #8 $ $Change: 7838 $ $DateTime: 2003/09/02 14:09:43 $ vim: expandtab shiftwidth=4
+# $Revision: #10 $ $Change: 7842 $ $DateTime: 2003/09/02 17:01:38 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.23';
+$Template::Extract::VERSION = '0.24';
 
 use 5.006;
 use strict;
@@ -17,8 +17,8 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.23 of Template::Extract, released
-September 2, 2003.
+This document describes version 0.24 of Template::Extract, released
+September 3, 2003.
 
 =head1 SYNOPSIS
 
@@ -88,15 +88,15 @@ internally, so extraction could fail silently on wrong places.
 
 =head1 NOTES
 
-This module's companion class, B<Template::Generate>, is still missing;
-it's supposed to take a data structure and the preferred rendering, and
-automagically generate a template to do the transformation. If you are
+This module's companion class, B<Template::Generate>, is still in early
+experimental stages; it can take data structures and rendered documents,
+then automagically generates templates to do the transformation. If you are
 into related research, please mail any ideas to me.
 
 =cut
 
-my ( $result, $param );
-my ( %loop, $cur_loop, $paren_id, $block_id );
+my $data; # the data structure to be returned by extract()
+my ( %loop, $cur_loop, $paren_id, $block_id, $param );
 
 sub extract {
     my ( $self, $template, $document, $ext_param ) = @_;
@@ -122,9 +122,12 @@ sub extract {
     defined($document)        or return;
     defined( $self->{regex} ) or return;
 
-    use re 'eval';
-    print "Regex: [\n$self->{regex}\n]\n" if $DEBUG;
-    return $result if $document =~ /$self->{regex}/s;
+    {
+        use re 'eval';
+        print "Regex: [\n$self->{regex}\n]\n" if $DEBUG;
+        return $data if $document =~ /$self->{regex}/s;
+    }
+
     return;
 }
 
@@ -149,7 +152,7 @@ sub _enter_loop {
 
 sub _validate {
     my $vars = shift;
-    my $obj  = ( _adjust( $result, @_ ) )[0]->{ $_[0] };
+    my $obj  = ( _adjust( $data, @_ ) )[0]->{ $_[0] };
 
     UNIVERSAL::isa( $obj, 'ARRAY' ) or return;
 
@@ -161,7 +164,7 @@ sub _validate {
 
 sub _set {
     my ( $var, $val, $num ) = splice( @_, 0, 3 );
-    my $obj = $result;
+    my $obj = $data;
 
     if (@_) {
 	my $cur = $loop{ $_[0] };           # current loop structure
@@ -171,7 +174,7 @@ sub _set {
 	$cur->{pos}{$num} = $-[$num];       # remember pos()
 
 	my $iteration = $cur->{var}{$num} - 1;
-	$obj = _traverse( $result, @_ )->{ $cur->{name} }[$iteration] ||= {};
+	$obj = _traverse( $data, @_ )->{ $cur->{name} }[$iteration] ||= {};
     }
 
     ( $obj, $var ) = _adjust( $obj, @$var );
@@ -203,7 +206,7 @@ sub _traverse {
 sub _set_param {
     $paren_id = 0;
     $block_id = 0;
-    $result   = {};
+    $data     = {};
     %loop     = ();
     $cur_loop = undef;
     $param    = $_[1] || {};
@@ -259,8 +262,8 @@ sub foreach {
     $regex =~ s/\*\*/, $block_id\*\*/g;
 
     return _re("_enter_loop($_[2], $block_id)") .   # sets $cur_loop
-      "(?:$regex)*" .                               # match content
-      _re("_validate([$vars], $_[2])");             # weed out partial matches
+           "(?:$regex)*" .                          # match content
+           _re("_validate([$vars], $_[2])");        # weed out partial matches
 }
 
 sub get {
@@ -289,18 +292,19 @@ sub block {
 }
 
 sub quoted {
-    my $output = '';
+    my $rv = '';
 
     foreach my $token ( @{ $_[1] } ) {
 	if ( $token =~ m/^'(.+)'$/ ) {    # nested hash traversal
-	    $output .= '$';
-	    $output .= "{$_}" foreach split( /','/, $1 );
+	    $rv .= '$';
+	    $rv .= "{$_}" foreach split( /','/, $1 );
 	}
 	else {
-	    $output .= $token;
+	    $rv .= $token;
 	}
     }
-    return $output;
+
+    return $rv;
 }
 
 sub ident {
@@ -337,7 +341,9 @@ sub DESTROY { }
 
 =head1 SEE ALSO
 
-L<Template>, L<Template::Parser>, L<WWW::SherlockSearch>
+L<Template>, L<Template::Generate>, L<Template::Parser>
+
+L<WWW::SherlockSearch>
 
 =head1 AUTHORS
 
