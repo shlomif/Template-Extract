@@ -1,4 +1,20 @@
 ____________________________________________________________________________
+[  9292] By: autrijus                              on 2003/12/13  01:55:15
+        Log: * This be 0.32.
+             * Improved build intrastructure, suggested by Mark Fowler,
+             to automatically check and download nmake.exe on Windows,
+             as well as supporting a Module::Build-compatible Build.PL.
+	   + Build.PL
+	   ! MANIFEST Makefile.PL README lib/Template/Extract.pm
+____________________________________________________________________________
+[  9149] By: autrijus                              on 2003/12/06  12:18:59
+        Log: * Clarify documents; add links to Simon and Mark's articles.
+	   ! lib/Template/Extract.pm
+____________________________________________________________________________
+[  8521] By: autrijus                              on 2003/10/21  22:52:33
+        Log: * silence some warnings.
+	   ! Makefile.PL t/1-basic.t
+____________________________________________________________________________
 [  8520] By: autrijus                              on 2003/10/21  22:49:57
         Log: * This be 0.31.
              * New flag $EXACT to control whether partial documents
@@ -7,6 +23,10 @@ ____________________________________________________________________________
              fail to match prematurely because it can match zero times.
              Now outermost foreach blocks must match at least once.
 	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
+[  8512] By: autrijus                              on 2003/10/20  23:40:47
+        Log: * changes and signatures.
+	   ! Changes SIGNATURE
 ____________________________________________________________________________
 [  8495] By: autrijus                              on 2003/10/20  01:01:46
         Log: * This be 0.30.
@@ -19,6 +39,10 @@ ____________________________________________________________________________
              * Refactored the commong context walking code from "get",
              "set" and "validate" into _ext, and improved readability.
 	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
+[  7908] By: autrijus                              on 2003/09/06  05:33:13
+        Log: * changes and signatures.
+	   ! Changes SIGNATURE
 ____________________________________________________________________________
 [  7907] By: autrijus                              on 2003/09/06  05:31:14
         Log: * This be 0.25.
@@ -38,18 +62,24 @@ ____________________________________________________________________________
         Log: * some more style cleanup.
 	   ! lib/Template/Extract.pm
 ____________________________________________________________________________
+[  7839] By: autrijus                              on 2003/09/02  14:13:29
+        Log: * changes and signatures.
+	   ! Changes SIGNATURE
+____________________________________________________________________________
 [  7838] By: autrijus                              on 2003/09/02  14:09:43
         Log: * This be 0.23.
              * no API changes, but seriously tidied up the internals.
 	   ! lib/Template/Extract.pm
 ____________________________________________________________________________
+[  7823] By: autrijus                              on 2003/09/01  12:56:28
+        Log: * changes and signatures.
+	   ! Changes SIGNATURE
+____________________________________________________________________________
 [  7822] By: autrijus                              on 2003/09/01  12:53:35
         Log: * This be 0.22.
-             * properly handles backtracking, so two [% var %]s are
-	       guaranteed
+             * properly handles backtracking, so two [% var %]s are guaranteed
              to match the same sequence.
-             * much more robust post-matching handlers, so the same
-	       variable
+             * much more robust post-matching handlers, so the same variable
              matched at the same location (but are of different length)
              will not create a new item in the enclosing FOREACH array.
 	   ! lib/Template/Extract.pm t/1-basic.t
@@ -58,6 +88,10 @@ ____________________________________________________________________________
         Log: * This be 0.21.
              * oops, left debug statements and "use YAML" in.
 	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
+[  7816] By: autrijus                              on 2003/08/31  19:30:15
+        Log: * changes and signatures.
+	   ! Changes SIGNATURE
 ____________________________________________________________________________
 [  7815] By: autrijus                              on 2003/08/31  19:28:28
         Log: * This be 0.20.
@@ -76,10 +110,18 @@ ____________________________________________________________________________
              \s characters (or lack thereof).
 	   ! lib/Template/Extract.pm
 ____________________________________________________________________________
+[  7799] By: autrijus                              on 2003/08/30  21:37:34
+        Log: * changes and signatures.
+	   ! Changes SIGNATURE
+____________________________________________________________________________
 [  7798] By: autrijus                              on 2003/08/30  21:33:11
         Log: * This be 0.11.
              * fix typo, documentation, tabs, spelling, tests, etc...
 	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
+[  7796] By: autrijus                              on 2003/08/30  17:06:24
+        Log: * changes and signatures.
+	   + Changes SIGNATURE
 ____________________________________________________________________________
 [  7795] By: autrijus                              on 2003/08/30  17:02:31
         Log: * This be 0.10, initial release.
@@ -88,5 +130,5 @@ ____________________________________________________________________________
 ____________________________________________________________________________
 [  7794] By: autrijus                              on 2003/08/30  17:01:35
         Log: * refactored, cleaned up template extractor.
-	   + Makefile.PL README lib/Template/Extract.pm
-	   + t/0-signature.t t/1-basic.t
+	   + Makefile.PL README lib/Template/Extract.pm t/0-signature.t
+	   + t/1-basic.t

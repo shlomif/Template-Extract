@@ -1,6 +1,6 @@
-#line 1 "inc/Module/Install/Metadata.pm - /usr/local/lib/perl5/site_perl/5.8.1/Module/Install/Metadata.pm"
+#line 1 "inc/Module/Install/Metadata.pm - /usr/local/lib/perl5/site_perl/5.8.0/Module/Install/Metadata.pm"
 # $File: //depot/cpan/Module-Install/lib/Module/Install/Metadata.pm $ $Author: autrijus $
-# $Revision: #27 $ $Change: 1778 $ $DateTime: 2003/10/17 17:37:55 $ vim: expandtab shiftwidth=4
+# $Revision: #28 $ $Change: 1781 $ $DateTime: 2003/10/22 17:14:03 $ vim: expandtab shiftwidth=4
 
 package Module::Install::Metadata;
 use Module::Install::Base; @ISA = qw(Module::Install::Base);
@@ -21,8 +21,8 @@ my @tuple_keys  = qw(build_requires requires recommends bundles);
 foreach my $key (@scalar_keys) {
     *$key = sub {
         my $self = shift;
-        return $self->{values}{$key} unless @_;
-        $self->{values}{$key} = shift;
+        return $self->{'values'}{$key} unless @_;
+        $self->{'values'}{$key} = shift;
         return $self;
     };
 }
@@ -30,13 +30,13 @@ foreach my $key (@scalar_keys) {
 foreach my $key (@tuple_keys) {
     *$key = sub {
         my $self = shift;
-        return $self->{values}{$key} unless @_;
+        return $self->{'values'}{$key} unless @_;
         my @rv;
         while (@_) {
             my $module  = shift or last;
             my $version = shift || 0;
             my $rv = [$module, $version];
-            push @{$self->{values}{$key}}, $rv;
+            push @{$self->{'values'}{$key}}, $rv;
             push @rv, $rv;
         }
         return @rv;
@@ -47,25 +47,25 @@ sub features {
     my $self = shift;
     while (my ($name, $mods) = splice(@_, 0, 2)) {
         my $count = 0;
-        push @{$self->{values}{features}}, ($name => [
+        push @{$self->{'values'}{'features'}}, ($name => [
             map { (++$count % 2 and ref($_) and ($count += $#$_)) ? @$_ : $_ } @$mods
         ] );
     }
-    return @{$self->{values}{features}};
+    return @{$self->{'values'}{'features'}};
 }
 
 sub no_index {
     my $self = shift;
     my $type = shift;
-    push @{$self->{values}{no_index}{$type}}, @_ if $type;
-    return $self->{values}{no_index};
+    push @{$self->{'values'}{'no_index'}{$type}}, @_ if $type;
+    return $self->{'values'}{'no_index'};
 }
 
 sub _dump {
     my $self = shift;
     my $package = ref($self->_top);
     my $version = $self->_top->VERSION;
-    my %values = %{$self->{values}};
+    my %values = %{$self->{'values'}};
 
     delete $values{sign};
 
@@ -84,11 +84,13 @@ sub _dump {
     foreach my $key (@tuple_keys) {
         next unless exists $values{$key};
         $dump .= "$key:\n";
-        $dump .= "  $_->[0]: $_->[1]\n" for @{$values{$key}};
+        foreach (@{$values{$key}}) {
+            $dump .= "  $_->[0]: $_->[1]\n";
+        }
     }
 
     if (my $no_index = $values{no_index}) {
-        push @{$no_index->{directory}}, 'inc';
+        push @{$no_index->{'directory'}}, 'inc';
         require YAML;
         local $YAML::UseHeader = 0;
         $dump .= YAML::Dump({ no_index => $no_index});

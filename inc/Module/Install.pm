@@ -1,9 +1,9 @@
-#line 1 "inc/Module/Install.pm - /usr/local/lib/perl5/site_perl/5.8.1/Module/Install.pm"
+#line 1 "inc/Module/Install.pm - /usr/local/lib/perl5/site_perl/5.8.0/Module/Install.pm"
 # $File: //depot/cpan/Module-Install/lib/Module/Install.pm $ $Author: autrijus $
-# $Revision: #60 $ $Change: 1778 $ $DateTime: 2003/10/17 17:37:55 $ vim: expandtab shiftwidth=4
+# $Revision: #62 $ $Change: 1805 $ $DateTime: 2003/12/11 18:43:02 $ vim: expandtab shiftwidth=4
 
 package Module::Install;
-$VERSION = '0.26';
+$VERSION = '0.28';
 
 die <<END unless defined $INC{'inc/Module/Install.pm'};
 Please invoke Module::Install with:
@@ -63,7 +63,7 @@ sub new {
     $args{dispatch} ||= 'Admin';
     $args{prefix}   ||= 'inc';
     $args{author}   ||= '.author';
-    $args{bundle}   ||= '_bundle';
+    $args{bundle}   ||= 'inc/BUNDLES';
 
     $class =~ s/^\Q$args{prefix}\E:://;
     $args{name}     ||= $class;

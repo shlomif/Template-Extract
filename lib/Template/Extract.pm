@@ -1,8 +1,8 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #13 $ $Change: 8520 $ $DateTime: 2003/10/21 22:49:57 $ vim: expandtab shiftwidth=4
+# $Revision: #15 $ $Change: 9292 $ $DateTime: 2003/12/13 01:55:15 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.31';
+$Template::Extract::VERSION = '0.32';
 
 use 5.006;
 use strict;
@@ -17,8 +17,8 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.31 of Template::Extract, released
-October 22, 2003.
+This document describes version 0.32 of Template::Extract, released
+December 13, 2003.
 
 =head1 SYNOPSIS
 
@@ -52,7 +52,7 @@ extraction functionality.  It can take a rendered document and its template
 together, and get the original data structure back, effectively reversing
 the C<process> function.
 
-If you just wish to extract RSS-type information out of a HTML document,
+If you just wish to extract RSS-like information from HTML documents,
 B<WWW::SherlockSearch> may be a more flexible solution.
 
 =head1 METHODS
@@ -61,7 +61,7 @@ B<WWW::SherlockSearch> may be a more flexible solution.
 
 This method takes three arguments: the template string, or a reference to
 it; a document string to match against; and an optional hash reference to
-supply initial files, as well as storing the extracted values into.
+supply initial values, as well as storing the extracted values into.
 
 The return value is C<\%values> upon success, and C<undef> on failure.
 If C<\%values> is omitted from the argument list, a new hash reference
@@ -73,8 +73,8 @@ construct to insert matched parameters into the hash reference.
 
 The special C<[% ... %]> directive is taken as C</.*?/s> in regex terms,
 i.e. "ignore everything (as short as possible) between this identifier
-and the next one".  For backward compatibility reasons, C<[% _ %]> and
-C<[% __ %]> are also accepted.
+and the next one".  For backward compatibility, C<[% _ %]> and C<[% __ %]>
+are also accepted.
 
 You may set C<$Template::Extract::DEBUG> to a true value to display
 generated regular expressions.
@@ -92,12 +92,12 @@ extract correctly.
 
 C<[% SET key = "value" %]> only works for simple scalar values.
 
-Outermost C<[% FOREACH %]> blocks must occur at least once, but
-inner ones may occur zero times.  This is so that the regex optimizer
-will not fail prematurely.
+Outermost C<[% FOREACH %]> blocks must match at least once in the
+document, but inner ones may occur zero times.  This is to prevent
+the regex optimizer from failing prematurely.
 
 There is no support for different I<PRE_CHOMP> and I<POST_CHOMP> settings 
-internally, so extraction could fail silently on wrong places.
+internally, so extraction could fail silently on extra linebreaks.
 
 =head1 NOTES
 
@@ -389,6 +389,12 @@ sub DESTROY { }
 L<Template>, L<Template::Generate>, L<Template::Parser>
 
 L<WWW::SherlockSearch>
+
+Simon Cozens' introduction to this module, in O'Reilly's I<Spidering Hacks>:
+L<http://www.oreillynet.com/pub/a/javascript/excerpt/spiderhacks_chap01/index.html>
+
+Mark Fowler's introduction to this module, in The 2003 Perl Advent Calendar:
+L<http://perladvent.org/2003/5th/>
 
 =head1 AUTHORS
 

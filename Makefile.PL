@@ -1,21 +1,18 @@
 #!/usr/bin/env perl
 # $File: //member/autrijus/Template-Extract/Makefile.PL $ $Author: autrijus $
-# $Revision: #2 $ $Change: 8521 $ $DateTime: 2003/10/21 22:52:33 $
+# $Revision: #3 $ $Change: 9292 $ $DateTime: 2003/12/13 01:55:15 $
 
 use 5.006;
 use inc::Module::Install;
 
-include_deps   ('Test::More', 5.006);
-build_requires ('Test::More', 0);
+requires	('Template' => '2.00');
+include_deps	('Test::More', 5.006);
+build_requires	('Test::More', 0);
 
-WriteMakefile (
-    AUTHOR	    => 'Autrijus Tang (autrijus@autrijus.org)',
-    NAME	    => 'Template::Extract',
-    ABSTRACT	    => 'Extract data structure from TT2-rendered documents',
-    VERSION_FROM    => 'lib/Template/Extract.pm',
-    SIGN	    => 1,
-    PREREQ_PM       => {
-        'Template'  => '2.00',
-    },
-);
+author		('Autrijus Tang (autrijus@autrijus.org)');
+name		('Template-Extract');
+abstract	('Extract data structure from TT2-rendered documents');
+version_from	('lib/Template/Extract.pm');
+sign		(1);
 
+&WriteAll;

@@ -1,5 +1,5 @@
 # $File: //member/autrijus/Template-Extract/README $ $Author: autrijus $
-# $Revision: #1 $ $Change: 7794 $ $DateTime: 2003/08/30 17:01:35 $
+# $Revision: #2 $ $Change: 9292 $ $DateTime: 2003/12/13 01:55:15 $
 
 This is the README file for Template::Extract, a module for extracting
 data structure from TT2-rendered documents, effectively reversing the
@@ -12,11 +12,19 @@ the module usage information.
 
 Template::Extract uses the standard perl module install process:
 
-cpansign -v		# see SIGNATURE for details
+cpansign -v		# optional; see SIGNATURE for details
 perl Makefile.PL
-make			# or 'nmake' on Win32; see notes below
+make			# or 'nmake' on Windows
 make test
 make install
+
+If you have Module::Build installed, this will also work:
+
+cpansign -v		# optional; see SIGNATURE for details
+perl Build.PL
+./Build			# or 'perl Build' on Windows; ditto below
+./Build test
+./Build install
 
 * Copyright
 

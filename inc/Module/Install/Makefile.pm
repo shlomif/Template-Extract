@@ -1,6 +1,6 @@
-#line 1 "inc/Module/Install/Makefile.pm - /usr/local/lib/perl5/site_perl/5.8.1/Module/Install/Makefile.pm"
+#line 1 "inc/Module/Install/Makefile.pm - /usr/local/lib/perl5/site_perl/5.8.0/Module/Install/Makefile.pm"
 # $File: //depot/cpan/Module-Install/lib/Module/Install/Makefile.pm $ $Author: autrijus $
-# $Revision: #47 $ $Change: 1778 $ $DateTime: 2003/10/17 17:37:55 $ vim: expandtab shiftwidth=4
+# $Revision: #51 $ $Change: 1805 $ $DateTime: 2003/12/11 18:43:02 $ vim: expandtab shiftwidth=4
 
 package Module::Install::Makefile;
 use Module::Install::Base; @ISA = qw(Module::Install::Base);
@@ -28,7 +28,11 @@ sub makemaker_args {
 
 sub clean_files {
     my $self = shift;
-    $self->makemaker_args( clean => { FILES => "@_ " } );
+    my $clean = $self->makemaker_args->{clean} ||= {};
+    %$clean = (
+        %$clean, 
+        FILES => join(" ", grep length, $clean->{FILES}, @_),
+    );
 }
 
 sub libs {
@@ -72,8 +76,10 @@ sub write {
 
     # merge both kinds of requires into prereq_pm
     my $dir = ($args->{DIR} ||= []);
-    push @$dir, map "$self->{prefix}/$self->{bundle}/$_->[1]", @{$self->bundles}
-        if $self->bundles;
+    if ($self->bundles) {
+        push @$dir, map "$_->[1]", @{$self->bundles};
+        delete $prereq->{$_->[0]} for @{$self->bundles};
+    }
 
     my %args = map {($_ => $args->{$_})} grep {defined($args->{$_})} keys %$args;
 
@@ -101,6 +107,13 @@ sub fix_up_makefile {
     my $makefile = do { local $/; <MAKEFILE> };
     close MAKEFILE;
 
+    $makefile =~ s/\b(test_harness\(\$\(TEST_VERBOSE\), )/$1'inc', /;
+    $makefile =~ s/( -I\$\(INST_ARCHLIB\))/ -Iinc$1/g;
+    $makefile =~ s/( "-I\$\(INST_LIB\)")/ "-Iinc"$1/g;
+
+    $makefile =~ s/^(FULLPERL = .*)/$1 -Iinc/m;
+    $makefile =~ s/^(PERL = .*)/$1 -Iinc/m;
+
     open MAKEFILE, '> Makefile' or die $!;
     print MAKEFILE "$preamble$makefile$postamble";
     close MAKEFILE;
@@ -124,4 +137,4 @@ sub postamble {
 
 __END__
 
-#line 256
+#line 269
