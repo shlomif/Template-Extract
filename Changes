@@ -1,4 +1,12 @@
 ____________________________________________________________________________
+[  7907] By: autrijus                              on 2003/09/06  05:31:14
+        Log: * This be 0.25.
+             * Kate L Pugh pointed out the _enter_loop construct
+             was failing if there are more than one loops inside
+             another loop, because the loop counter of the first
+             loop inside was inadvertently reset to 0.  Fixed.
+	   ! lib/Template/Extract.pm t/1-basic.t
+____________________________________________________________________________
 [  7842] By: autrijus                              on 2003/09/02  17:01:38
         Log: * This be 0.24.
              * now Template::Generate is released, modify relevant PODs.

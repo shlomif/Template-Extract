@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 # $File: //member/autrijus/Template-Extract/t/1-basic.t $ $Author: autrijus $
-# $Revision: #6 $ $Change: 7842 $ $DateTime: 2003/09/02 17:01:38 $ vim: expandtab shiftwidth=4
+# $Revision: #7 $ $Change: 7907 $ $DateTime: 2003/09/06 05:31:14 $ vim: expandtab shiftwidth=4
 
 use strict;
-use Test::More tests => 6;
+use Test::More tests => 7;
 
 use_ok('Template::Extract');
 
@@ -78,9 +78,7 @@ this text is ignored, too.</li></ul>
 this text is ignored, also.</li></ol>
 .
 
-#$Template::Extract::DEBUG++;
 $data = $obj->extract($template, $document);
-#use YAML; print YAML::Dump($data);
 
 is_deeply($data, {
     'record' => [ { 
@@ -89,20 +87,21 @@ is_deeply($data, {
         'url'       => 'http://cpan.org',
         'title'     => 'CPAN.',
     } ],
-    subject => [map { {
-    'sub' => { 'heading' => $_ },
-    'record' => [ { 
-        'rating'    => 'A+',
-        'comment'   => 'nice',
-        'url'       => 'http://slashdot.org',
-        'title'     => 'News for nerds.',
-    }, {
-        'rating'    => 'Z!',
-        'comment'   => 'yeah',
-        'url'       => 'http://microsoft.com',
-        'title'     => 'Where do you want...',
-    } ]
-} } qw(Foo Bar)] }, 'extract() with two nested and one extra FOREACH');
+    'subject' => [map { {
+        'sub' => { 'heading' => $_ },
+        'record' => [ { 
+            'rating'    => 'A+',
+            'comment'   => 'nice',
+            'url'       => 'http://slashdot.org',
+            'title'     => 'News for nerds.',
+        }, {
+            'rating'    => 'Z!',
+            'comment'   => 'yeah',
+            'url'       => 'http://microsoft.com',
+            'title'     => 'Where do you want...',
+        } ]
+    } } qw(Foo Bar)],
+}, 'extract() with two nested and one extra FOREACH');
 
 $obj = Template::Extract->new;
 
@@ -126,3 +125,40 @@ is_deeply($data, {
     'E' => 'me'
 }, 'extract() with backtracking');
 
+$obj = Template::Extract->new;
+
+$template = << '.';
+[% FOREACH entry %]
+[% ... %]
+<div>[% FOREACH title %]<i>[% title_text %]</i>[% END %]<br>[% content %]</div>
+  ([% FOREACH comment %]<b>[% comment_text %]</b> |[% END %]Comment on this)
+[% END %]
+.
+
+$document = << '.';
+<div><i>Title 1</i><i>Title 1.a</i><br>xxx</div>
+  (<b>1 Comment</b> |Comment on this)
+<div><i>Title 2</i><br>foo</div>
+  (Comment on this)
+.
+
+$data = $obj->extract( $template, $document );
+
+is_deeply($data, {
+    'entry' => [ { 
+        'comment'   => [ {
+            'comment_text' => '1 Comment',
+        } ],
+        'content'   => 'xxx',
+        'title'   => [ {
+            'title_text' => 'Title 1',
+        }, {
+            'title_text' => 'Title 1.a',
+        } ],
+    }, {
+        'content'   => 'foo',
+        'title'   => [ {
+            'title_text' => 'Title 2',
+        } ],
+    } ],
+}, 'extract() with two FOREACHs nested inside a FOREACH');

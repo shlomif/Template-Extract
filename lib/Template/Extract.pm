@@ -1,8 +1,8 @@
 # $File: //member/autrijus/Template-Extract/lib/Template/Extract.pm $ $Author: autrijus $
-# $Revision: #10 $ $Change: 7842 $ $DateTime: 2003/09/02 17:01:38 $ vim: expandtab shiftwidth=4
+# $Revision: #11 $ $Change: 7907 $ $DateTime: 2003/09/06 05:31:14 $ vim: expandtab shiftwidth=4
 
 package Template::Extract;
-$Template::Extract::VERSION = '0.24';
+$Template::Extract::VERSION = '0.25';
 
 use 5.006;
 use strict;
@@ -17,8 +17,8 @@ Template::Extract - Extract data structure from TT2-rendered documents
 
 =head1 VERSION
 
-This document describes version 0.24 of Template::Extract, released
-September 3, 2003.
+This document describes version 0.25 of Template::Extract, released
+September 6, 2003.
 
 =head1 SYNOPSIS
 
@@ -132,22 +132,14 @@ sub extract {
 }
 
 sub _enter_loop {
-    if ( $cur_loop and $cur_loop->{id} == $_[1] ) {
-	# reiterating a FOREACH loop
-	$cur_loop->{count}++;
-	$cur_loop->{var} = {};
-	$cur_loop->{pos} = {};
-	return;
-    }
-
-    # entering a FOREACH loop for the first time
     $cur_loop = $loop{ $_[1] } ||= {
 	name  => $_[0],
 	id    => $_[1],
-	count => 0,
-	var   => {},
-	pos   => {},
+	count => -1,
     };
+    $cur_loop->{count}++;
+    $cur_loop->{var} = {};
+    $cur_loop->{pos} = {};
 }
 
 sub _validate {
@@ -194,9 +186,9 @@ sub _traverse {
     my ( $obj, $val ) = ( shift, shift );
 
     my $depth = -1;
-    foreach my $id ( reverse @_ ) {
+    while (my $id = pop(@_)) {
 	my $var   = $loop{$id}{name};
-	my $index = $cur_loop->{count};
+        my $index = $loop{$_[-1] || $val}{count};
 	$obj = $obj->{$var}[$index] ||= {};
     }
     return $obj;
