@@ -6,7 +6,7 @@ Module::Signature installed, then type:
 
     % cpansign -v
 
-It will check each file's integrity, as well as the signature's
+It would check each file's integrity, as well as the signature's
 validity.  If "==> Signature verified OK! <==" is not displayed,
 the distribution may already have been compromised, and you should
 not run its Makefile.PL or Build.PL.
@@ -15,33 +15,33 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 4853095f9e5a7f38fdd4754716d9bbe7e690363f Build.PL
-SHA1 34abfb20c9f58c1b8d9c1eb55d5f5ca3337497e6 Changes
-SHA1 3c98ee3139eebeed8dd0a854ad3dcca2f0a33087 MANIFEST
+SHA1 2ae9b8c98575b7a4292865b0131b77d0c1ee86be Changes
+SHA1 17747b9778535dc590a8356d034b2fe15b25d61a MANIFEST
 SHA1 a169e41d988b079714734e122cef9ec103e4c0a1 MANIFEST.SKIP
-SHA1 a8b9738cce88eae62287b3ccf36365fefa1d47e5 META.yml
+SHA1 0f857c93671d749a697f0ed2e898b19b0edb7624 META.yml
 SHA1 97d0a9bfbee319839cef08f55d82afa971028060 Makefile.PL
-SHA1 27a63543391521cc0d8c46a309493189a76933b8 README
-SHA1 02597776ad22aacd2c8e189594fcbf701390b606 inc/Module/Install.pm
-SHA1 7ca8b8f54287c2b5af8062fc9f349275a07e06f3 inc/Module/Install/Base.pm
-SHA1 de4a27f0ec8f63ff8a11292c7f4060e4c4e48f27 inc/Module/Install/Build.pm
-SHA1 b6af22816210f8eaab4c2c616e05a8892b2fcfd0 inc/Module/Install/Can.pm
-SHA1 33659c004518e95afb6ffafad41e84f2a6268412 inc/Module/Install/Fetch.pm
-SHA1 b42b4d3a89848325ae29422c72638e1571e7af1b inc/Module/Install/Include.pm
-SHA1 c4ed10cd20914c04f3fff3f8aaf8943372cec114 inc/Module/Install/Makefile.pm
-SHA1 ccf9b6267b5c9e7b35ef129f7e974255955c8867 inc/Module/Install/Metadata.pm
-SHA1 1288f4c4e4ba88e19194d7952eacbd6be2a5b916 inc/Module/Install/Win32.pm
-SHA1 1022a7ab797fc0081ea947f102650362ad925d7a inc/Module/Install/WriteAll.pm
-SHA1 abb75617dc4bbbfac93dd01b54a677a7c21524ba inc/Test/Builder.pm
-SHA1 3f17e58cdbc38f364dfc7a3c483186cc3e1661bd inc/Test/More.pm
-SHA1 e848666c6ad596f67f9367abfd49fb98cbfb8817 lib/Template/Extract.pm
-SHA1 82b3f8114d31a7e15d90cd9763b2f8e529396f94 lib/Template/Extract/Compile.pm
-SHA1 0de9e5f5caee34e28a47a1de01bac04c2c7b7c29 lib/Template/Extract/Run.pm
-SHA1 f3e7309996c4de9a7e05ded43499dcdbf92aa428 t/0-signature.t
-SHA1 52dff54feb763be4389785522dcedd93e2347979 t/1-basic.t
+SHA1 24fc45a269e415dac531633d9190f5b78f30809c README
+SHA1 06d883487127fa0026311904e7c4867e850c505c inc/Module/Install.pm
+SHA1 2771d5c5033e94c4789c66a0aad4e21c62985ce9 inc/Module/Install/Base.pm
+SHA1 75ed5657494b287edaca70bcd62d8519cb745e87 inc/Module/Install/Build.pm
+SHA1 b5e2d5fc07b92d042c97631d2b00f61f974fc164 inc/Module/Install/Can.pm
+SHA1 c3747aa4bd8faa530c974b78f729c67f15c6f928 inc/Module/Install/Fetch.pm
+SHA1 c6d2a330e2a8cb3a1db7bfc4236fea9a8aafe297 inc/Module/Install/Include.pm
+SHA1 d8bc0d6e0a82d2b7533bdd3de467593094cc8b2c inc/Module/Install/Makefile.pm
+SHA1 6fca1d05c6b9a8f10865de5be4fefb9bfa7a52e9 inc/Module/Install/Metadata.pm
+SHA1 6b051a6d3ed824df40343a7ff09b66282e1783c3 inc/Module/Install/Win32.pm
+SHA1 77f82ce7c623e05304ac9aae05bcd1a5558fadbb inc/Module/Install/WriteAll.pm
+SHA1 9d135b52aef905c9b23bb1ead96ca8a48dd6cb82 inc/Test/Builder.pm
+SHA1 0b38d0a7e1db5f84cd3c8b9716cd8c5fc1b35ef2 inc/Test/More.pm
+SHA1 1f8858045fbe6d1b9e55d596d1b26bb52e25764c lib/Template/Extract.pm
+SHA1 da76f23de9aca78aab270af1c6820b549f3114be lib/Template/Extract/Compile.pm
+SHA1 b93b67214a8d7dd8fc2e021080542c0a02a388d2 lib/Template/Extract/Parser.pm
+SHA1 2d648cd8bb0c9c9e3e4c917a8d76d3efc3e7761a lib/Template/Extract/Run.pm
+SHA1 f63882f30e3c6c518b0aefc14dbe6c003c0c04cc t/1-basic.t
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.3 (FreeBSD)
+Version: GnuPG v1.2.6 (FreeBSD)
 
-iD8DBQFBfQV7tLPdNzw1AaARAl/5AJ9WEdLTd2WRoIoDoca9tpxrBAy7cACfQTen
-aKx25KDJ+cLIpTI3y/WQK1w=
-=ydnl
+iD8DBQFC10/jtLPdNzw1AaARAkkeAKCl97uc/WsZllTx0sJAGRjIkNcANACdF+jT
+ak72H2oE0ScvzGZsI9IKP5o=
+=zgmN
 -----END PGP SIGNATURE-----

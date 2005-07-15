@@ -1,10 +1,9 @@
 package Template::Extract::Compile;
-$Template::Extract::Compile::VERSION = '0.38';
+$Template::Extract::Compile::VERSION = '0.39';
 
 use 5.006;
 use strict;
 use warnings;
-use Template::Parser;
 
 our ( $DEBUG, $EXACT );
 my ( $paren_id, $block_id );
@@ -53,18 +52,11 @@ sub new {
 }
 
 sub compile {
-    my ( $self, $template ) = @_;
+    my ( $self, $template, $parser ) = @_;
 
     $self->_init();
 
     if ( defined $template ) {
-        my $parser = Template::Parser->new(
-            {
-                PRE_CHOMP  => 1,
-                POST_CHOMP => 1,
-            }
-        );
-
         $parser->{FACTORY} = ref($self);
         $template = $$template if UNIVERSAL::isa( $template, 'SCALAR' );
         $template =~ s/\n+$//;
@@ -250,7 +242,7 @@ Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2004 by Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>.
+Copyright 2004, 2005 by Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>.
 
 This program is free software; you can redistribute it and/or 
 modify it under the same terms as Perl itself.

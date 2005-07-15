@@ -9,23 +9,23 @@ the module usage information.
 
 Template::Extract uses the standard perl module install process:
 
-cpansign -v		# optional; see SIGNATURE for details
-perl Makefile.PL
-make			# or 'nmake' on Windows
-make test
-make install
+    cpansign -v         # optional; see SIGNATURE for details
+    perl Makefile.PL
+    make                # or 'nmake' on Windows
+    make test
+    make install
 
 If you have Module::Build installed, this also works:
 
-cpansign -v		# optional; see SIGNATURE for details
-perl Build.PL
-./Build			# or 'perl Build' on Windows
-./Build test
-./Build install
+    cpansign -v         # optional; see SIGNATURE for details
+    perl Build.PL
+    ./Build             # or 'perl Build' on Windows
+    ./Build test
+    ./Build install
 
 * Copyright
 
-Copyright 2001, 2002, 2003, 2004
+Copyright 2001, 2002, 2003, 2004, 2005
 by Autrijus Tang <autrijus@autrijus.org>.
 
 All rights reserved.  You can redistribute and/or modify

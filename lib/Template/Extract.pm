@@ -1,11 +1,12 @@
 package Template::Extract;
-$Template::Extract::VERSION = '0.38';
+$Template::Extract::VERSION = '0.39';
 
 use 5.006;
 use strict;
 use warnings;
 use constant RUN_CLASS      => (__PACKAGE__ . '::Run');
 use constant COMPILE_CLASS  => (__PACKAGE__ . '::Compile');
+use constant PARSER_CLASS   => (__PACKAGE__ . '::Parser');
 
 our ( $DEBUG, $EXACT );
 
@@ -15,8 +16,8 @@ Template::Extract - Use TT2 syntax to extract data from documents
 
 =head1 VERSION
 
-This document describes version 0.38 of Template::Extract, released
-October 25, 2004.
+This document describes version 0.39 of Template::Extract, released
+July 15, 2005.
 
 =head1 SYNOPSIS
 
@@ -52,9 +53,12 @@ C<Template::process> function.
 
 =head1 METHODS
 
-=head2 new()
+=head2 new(\%options)
 
-Constructor.  Currently takes no parameters.
+Constructor.  Currently all options are passed into the underlying
+C<Template::Parser> object.  The same set of options are also passed to classes
+responsible to compile and run the extraction process, but they are currently
+ignored.
 
 =head2 extract($template, $document, \%values)
 
@@ -99,6 +103,13 @@ Use B<Template::Extract::Run> to perform the second phase of
 C<extract>, by applying the regular expression on C<$document>
 and returning the resulting C<\%values>.
 
+=head1 SUBCLASSING
+
+If you would like to use different modules to parse, compile and run
+the extraction process, simply subclass C<Template::Extract> and
+override the C<COMPILE_CLASS>, C<PARSER_CLASS> and C<RUN_CLASS>
+methods to return alternate class names.
+
 =head1 CAVEATS
 
 Currently, the C<extract> method only supports C<[% GET %]>,
@@ -115,6 +126,9 @@ the regex optimizer from failing prematurely.
 There is no support for different I<PRE_CHOMP> and I<POST_CHOMP> settings 
 internally, so extraction could fail silently on extra linebreaks.
 
+It is somewhat awkward to use global variables to control C<EXACT> and C<DEBUG>
+behaviour; patches welcome to promote them into per-instance options.
+
 =head1 NOTES
 
 This module's companion class, B<Template::Generate>, is still in early
@@ -128,10 +142,11 @@ sub new {
     my $self = shift;
     my $class = ref($self) || $self;
 
-    my $run_class = $class->RUN_CLASS;
-    my $compile_class = $class->COMPILE_CLASS;
+    my $run_class       = $class->RUN_CLASS;
+    my $compile_class   = $class->COMPILE_CLASS;
+    my $parser_class    = $class->PARSER_CLASS;
 
-    foreach my $subclass ($run_class, $compile_class) {
+    foreach my $subclass ($run_class, $compile_class, $parser_class) {
         no strict 'refs';
         $class->load($subclass);
         *{"$subclass\::DEBUG"} = *DEBUG;
@@ -141,6 +156,7 @@ sub new {
     bless({
         run_object     => $run_class->new(@_),
         compile_object => $compile_class->new(@_),
+        parser_object  => $parser_class->new(@_),
     }, $class);
 }
 
@@ -151,15 +167,16 @@ sub load {
 }
 
 sub extract {
-    my $self = shift;
+    my $self     = shift;
     my $template = shift;
 
     $self->run( $self->compile($template), @_ );
 }
 
 sub compile {
-    my $self = shift;
-    $self->{compile_object}->compile(@_);
+    my $self     = shift;
+    my $template = shift;
+    $self->{compile_object}->compile($template, $self->{parser_object});
 }
 
 sub run {
@@ -171,7 +188,8 @@ sub run {
 
 =head1 SEE ALSO
 
-L<Template::Extract::Compile>, L<Template::Extract::Run>
+L<Template::Extract::Compile>, L<Template::Extract::Run>,
+L<Template::Extract::Parser>
 
 L<Template>, L<Template::Generate>
 
@@ -187,7 +205,7 @@ Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2001, 2002, 2003, 2004
+Copyright 2001, 2002, 2003, 2004, 2005
 by Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>.
 
 This program is free software; you can redistribute it and/or 

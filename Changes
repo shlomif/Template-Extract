@@ -1,3 +1,11 @@
+[Changes for 0.39 - 2005-07-15]
+
+* Allow passing Template::Parser options directly into
+  Template::Extract->new().  Suggested by brian d foy.
+
+* Factored out the parser into Template::Extract::Parser to
+  allow use of alternate parsers with the PARSE_CLASS class method.
+
 [Changes for 0.38 - 2004-10-25]
 
 * Fix test failure with pre-5.8.4's regex optimizer.
