@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 use strict;
-use Test::More tests => 14;
+use Test::More tests => 15;
 
 use_ok('Template::Extract');
 
@@ -235,3 +235,14 @@ $document = '2004-12-17';
 $data = Template::Extract->new({TAG_STYLE => 'mason'})->extract($template, $document);
 
 is_deeply($data, { year => 2004, month => 12, day => 17 }, 'change of TAG_STYLE');
+
+$document = << '.';
+<h2></h2>
+<h2>hello</h2>
+.
+
+$template = '<h2>[% d =~ /((?!<h2|<\/h2).+?)/ %]</h2>';
+
+$data = Template::Extract->new->extract($template, $document);
+
+is_deeply($data, { d => 'hello' }, 'capturing regex');

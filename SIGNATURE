@@ -15,33 +15,33 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 4853095f9e5a7f38fdd4754716d9bbe7e690363f Build.PL
-SHA1 2ae9b8c98575b7a4292865b0131b77d0c1ee86be Changes
+SHA1 e7a72f9b2b127cc588952de83ce10df621e98a92 Changes
 SHA1 17747b9778535dc590a8356d034b2fe15b25d61a MANIFEST
 SHA1 a169e41d988b079714734e122cef9ec103e4c0a1 MANIFEST.SKIP
-SHA1 0f857c93671d749a697f0ed2e898b19b0edb7624 META.yml
+SHA1 1780b02b94c6390ef2638ed6081fd7bed6738226 META.yml
 SHA1 97d0a9bfbee319839cef08f55d82afa971028060 Makefile.PL
 SHA1 24fc45a269e415dac531633d9190f5b78f30809c README
-SHA1 06d883487127fa0026311904e7c4867e850c505c inc/Module/Install.pm
-SHA1 2771d5c5033e94c4789c66a0aad4e21c62985ce9 inc/Module/Install/Base.pm
-SHA1 75ed5657494b287edaca70bcd62d8519cb745e87 inc/Module/Install/Build.pm
-SHA1 b5e2d5fc07b92d042c97631d2b00f61f974fc164 inc/Module/Install/Can.pm
-SHA1 c3747aa4bd8faa530c974b78f729c67f15c6f928 inc/Module/Install/Fetch.pm
-SHA1 c6d2a330e2a8cb3a1db7bfc4236fea9a8aafe297 inc/Module/Install/Include.pm
-SHA1 d8bc0d6e0a82d2b7533bdd3de467593094cc8b2c inc/Module/Install/Makefile.pm
-SHA1 6fca1d05c6b9a8f10865de5be4fefb9bfa7a52e9 inc/Module/Install/Metadata.pm
-SHA1 6b051a6d3ed824df40343a7ff09b66282e1783c3 inc/Module/Install/Win32.pm
-SHA1 77f82ce7c623e05304ac9aae05bcd1a5558fadbb inc/Module/Install/WriteAll.pm
+SHA1 19e565da4e1516f3e722d54142e715eae98b6fd9 inc/Module/Install.pm
+SHA1 a7f7e2bfb0ac6f8ad965832ef3a246a7bd433058 inc/Module/Install/Base.pm
+SHA1 4af7a9024ce3ee6ffb7ed33e2b2b3dc34cbad30b inc/Module/Install/Build.pm
+SHA1 7b0e82ea99187c2121bfc8fe590de8363e8100d7 inc/Module/Install/Can.pm
+SHA1 d097dedadac0edcafbee3a14c262e24089f5795e inc/Module/Install/Fetch.pm
+SHA1 08bfc9e53d1e15f5556c9d282a7db70a68b9ff06 inc/Module/Install/Include.pm
+SHA1 69b187644e08b73ab9ffbcb61ee51291e693685f inc/Module/Install/Makefile.pm
+SHA1 7298762404963528a5abcb0fa76cfe12afb9b87c inc/Module/Install/Metadata.pm
+SHA1 8ee248d67d4c61a4f01e6a96c41afbd93be4c9ef inc/Module/Install/Win32.pm
+SHA1 3c099dd7fb73a49bcc489b152c3ca3c7a1b36427 inc/Module/Install/WriteAll.pm
 SHA1 9d135b52aef905c9b23bb1ead96ca8a48dd6cb82 inc/Test/Builder.pm
 SHA1 0b38d0a7e1db5f84cd3c8b9716cd8c5fc1b35ef2 inc/Test/More.pm
-SHA1 1f8858045fbe6d1b9e55d596d1b26bb52e25764c lib/Template/Extract.pm
-SHA1 da76f23de9aca78aab270af1c6820b549f3114be lib/Template/Extract/Compile.pm
-SHA1 b93b67214a8d7dd8fc2e021080542c0a02a388d2 lib/Template/Extract/Parser.pm
-SHA1 2d648cd8bb0c9c9e3e4c917a8d76d3efc3e7761a lib/Template/Extract/Run.pm
-SHA1 f63882f30e3c6c518b0aefc14dbe6c003c0c04cc t/1-basic.t
+SHA1 d0af8d1341dcd0d7846408172ad312140c86803f lib/Template/Extract.pm
+SHA1 b781f76c2d003d0915afeff4b786b43fca46d96f lib/Template/Extract/Compile.pm
+SHA1 c646c2799abe9d88fb0a66bb5fe6f59c8f37a8c2 lib/Template/Extract/Parser.pm
+SHA1 2f58884baffe4ed1a162c43be285fef502f0f99b lib/Template/Extract/Run.pm
+SHA1 487cbbe512b38608c0d4f256d11524fe1953323a t/1-basic.t
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (FreeBSD)
+Version: GnuPG v1.4.2 (FreeBSD)
 
-iD8DBQFC10/jtLPdNzw1AaARAkkeAKCl97uc/WsZllTx0sJAGRjIkNcANACdF+jT
-ak72H2oE0ScvzGZsI9IKP5o=
-=zgmN
+iD8DBQFDKyV5tLPdNzw1AaARArDqAJ9E2PH6/CJp0qbI8bIrzGdX3QreGACfczl3
+silhiAs6bZyveWkx0YTH7Hk=
+=/m6d
 -----END PGP SIGNATURE-----

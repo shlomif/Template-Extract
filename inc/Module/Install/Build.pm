@@ -1,4 +1,4 @@
-#line 1 "inc/Module/Install/Build.pm - /usr/local/lib/perl5/site_perl/5.8.5/Module/Install/Build.pm"
+#line 1 "inc/Module/Install/Build.pm - /usr/local/lib/perl5/site_perl/5.8.7/Module/Install/Build.pm"
 package Module::Install::Build;
 $VERSION = '0.01';
 use strict;

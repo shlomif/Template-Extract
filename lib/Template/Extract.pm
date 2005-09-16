@@ -1,5 +1,5 @@
 package Template::Extract;
-$Template::Extract::VERSION = '0.39';
+$Template::Extract::VERSION = '0.40';
 
 use 5.006;
 use strict;
@@ -16,8 +16,8 @@ Template::Extract - Use TT2 syntax to extract data from documents
 
 =head1 VERSION
 
-This document describes version 0.39 of Template::Extract, released
-July 15, 2005.
+This document describes version 0.40 of Template::Extract, released
+September 17, 2005.
 
 =head1 SYNOPSIS
 
@@ -82,7 +82,8 @@ are also accepted.
 The special C<[% // %]> directive is taken as a non-capturing regex,
 embedded inside C</(?:)/s>; for example, C<[% /\d*/ %]> matches any
 number of digits.  Capturing parentheses may not be used with this
-directive.
+directive, but you can use the C<[% var =~ // %]> directive to capture
+the match into C<var>.
 
 You may set C<$Template::Extract::DEBUG> to a true value to display
 generated regular expressions.

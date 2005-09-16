@@ -1,5 +1,5 @@
 package Template::Extract::Parser;
-$Template::Extract::Parser::VERSION = '0.39';
+$Template::Extract::Parser::VERSION = '0.40';
 
 use 5.006;
 use strict;

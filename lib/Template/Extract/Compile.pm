@@ -1,5 +1,5 @@
 package Template::Extract::Compile;
-$Template::Extract::Compile::VERSION = '0.39';
+$Template::Extract::Compile::VERSION = '0.40';
 
 use 5.006;
 use strict;
@@ -62,6 +62,11 @@ sub compile {
         $template =~ s/\n+$//;
         $template =~ s/\[%\s*(?:\.\.\.|_|__)\s*%\]/[% \/.*?\/ %]/g;
         $template =~ s/\[%\s*(\/.*?\/)\s*%\]/'[% "' . quotemeta($1) . '" %]'/eg;
+        $template =~ s{
+            \[%\s*([a-zA-z0-9]+)\s*\=\~\s*(/.*?/)\s*%\]
+        }{
+            '[% SET ' . $1 . ' = "' . quotemeta($2) . '" %]'
+        }mxegi;
 
         return $parser->parse($template)->{BLOCK};
     }
@@ -159,7 +164,13 @@ sub get {
 }
 
 sub set {
+    my $regex = undef;
+
     ++$paren_id;
+
+    if ($_[1][1] =~ m|^/(.*)/$|) {
+        $regex = $1;
+    }
 
     my $val = $_[1][1];
     $val =~ s/^'(.*)'\z/$1/;
@@ -170,7 +181,12 @@ sub set {
             $_[1][0][ $_ * 2 ]
         } ( 0 .. $#{ $_[1][0] } / 2 )
     );
-    return '()' . _re("_ext(([$parents], \\\\'$val', $paren_id)\*\*)");
+
+    if (defined($regex)) {
+        return $1 . _re("_ext(([$parents], \$$paren_id, $paren_id)\*\*)");
+    } else {
+        return '()' . _re("_ext(([$parents], \\\\'$val', $paren_id)\*\*)");
+    }
 }
 
 sub textblock {

@@ -1,5 +1,5 @@
 package Template::Extract::Run; 
-$Template::Extract::Run::VERSION = '0.39';
+$Template::Extract::Run::VERSION = '0.40';
 
 use 5.006;
 use strict;
