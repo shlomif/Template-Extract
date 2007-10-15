@@ -1,14 +1,67 @@
 package Template::Extract;
-$Template::Extract::VERSION = '0.40';
+$Template::Extract::VERSION = '0.41';
 
 use 5.006;
 use strict;
 use warnings;
-use constant RUN_CLASS      => (__PACKAGE__ . '::Run');
-use constant COMPILE_CLASS  => (__PACKAGE__ . '::Compile');
-use constant PARSER_CLASS   => (__PACKAGE__ . '::Parser');
+use constant RUN_CLASS     => ( __PACKAGE__ . '::Run' );
+use constant COMPILE_CLASS => ( __PACKAGE__ . '::Compile' );
+use constant PARSER_CLASS  => ( __PACKAGE__ . '::Parser' );
 
 our ( $DEBUG, $EXACT );
+
+sub new {
+    my $self = shift;
+    my $class = ref($self) || $self;
+
+    my $run_class     = $class->RUN_CLASS;
+    my $compile_class = $class->COMPILE_CLASS;
+    my $parser_class  = $class->PARSER_CLASS;
+
+    foreach my $subclass ( $run_class, $compile_class, $parser_class ) {
+        no strict 'refs';
+        $class->load($subclass);
+        *{"$subclass\::DEBUG"} = *DEBUG;
+        *{"$subclass\::EXACT"} = *EXACT;
+    }
+
+    bless(
+        {
+            run_object     => $run_class->new(@_),
+            compile_object => $compile_class->new(@_),
+            parser_object  => $parser_class->new(@_),
+        },
+        $class
+    );
+}
+
+sub load {
+    my ( $self, $class ) = @_;
+    $class =~ s{::}{/}g;
+    require "$class.pm";
+}
+
+sub extract {
+    my $self     = shift;
+    my $template = shift;
+
+    $self->run( $self->compile($template), @_ );
+}
+
+sub compile {
+    my $self     = shift;
+    my $template = shift;
+    $self->{compile_object}->compile( $template, $self->{parser_object} );
+}
+
+sub run {
+    my $self = shift;
+    $self->{run_object}->run(@_);
+}
+
+1;
+
+__END__
 
 =head1 NAME
 
@@ -16,8 +69,8 @@ Template::Extract - Use TT2 syntax to extract data from documents
 
 =head1 VERSION
 
-This document describes version 0.40 of Template::Extract, released
-September 17, 2005.
+This document describes version 0.41 of Template::Extract, released
+October 16, 2007.
 
 =head1 SYNOPSIS
 
@@ -139,54 +192,6 @@ into related research, please mail any ideas to me.
 
 =cut
 
-sub new {
-    my $self = shift;
-    my $class = ref($self) || $self;
-
-    my $run_class       = $class->RUN_CLASS;
-    my $compile_class   = $class->COMPILE_CLASS;
-    my $parser_class    = $class->PARSER_CLASS;
-
-    foreach my $subclass ($run_class, $compile_class, $parser_class) {
-        no strict 'refs';
-        $class->load($subclass);
-        *{"$subclass\::DEBUG"} = *DEBUG;
-        *{"$subclass\::EXACT"} = *EXACT;
-    }
-
-    bless({
-        run_object     => $run_class->new(@_),
-        compile_object => $compile_class->new(@_),
-        parser_object  => $parser_class->new(@_),
-    }, $class);
-}
-
-sub load {
-    my ($self, $class) = @_;
-    $class =~ s{::}{/}g;
-    require "$class.pm";
-}
-
-sub extract {
-    my $self     = shift;
-    my $template = shift;
-
-    $self->run( $self->compile($template), @_ );
-}
-
-sub compile {
-    my $self     = shift;
-    my $template = shift;
-    $self->{compile_object}->compile($template, $self->{parser_object});
-}
-
-sub run {
-    my $self = shift;
-    $self->{run_object}->run(@_);
-}
-
-1;
-
 =head1 SEE ALSO
 
 L<Template::Extract::Compile>, L<Template::Extract::Run>,
@@ -202,16 +207,33 @@ L<http://perladvent.org/2003/5th/>
 
 =head1 AUTHORS
 
-Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>
+Audrey Tang E<lt>cpan@audreyt.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2001, 2002, 2003, 2004, 2005
-by Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>.
+Copyright 2001, 2002, 2003, 2004, 2005, 2007
+by Audrey Tang E<lt>cpan@audreyt.orgE<gt>.
 
-This program is free software; you can redistribute it and/or 
-modify it under the same terms as Perl itself.
+This software is released under the MIT license cited below.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+=head2 The "MIT" License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
 
 =cut

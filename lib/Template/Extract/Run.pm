@@ -1,12 +1,143 @@
-package Template::Extract::Run; 
-$Template::Extract::Run::VERSION = '0.40';
+package Template::Extract::Run;
+$Template::Extract::Run::VERSION = '0.41';
 
 use 5.006;
 use strict;
 use warnings;
 
-our ( $DEBUG );
-my ( %loop, $cur_loop, $data);
+our ($DEBUG);
+my ( %loop, $cur_loop, $data );
+
+sub new {
+    my $class = shift;
+    my $self  = {};
+    return bless( $self, $class );
+}
+
+sub run {
+    my ( $self, $regex, $document, $ext_data ) = @_;
+
+    $self->_init($ext_data);
+
+    defined($document) or return undef;
+    defined($regex)    or return undef;
+
+    {
+        use re 'eval';
+        return $data if $document =~ /$regex/s;
+    }
+
+    return undef;
+}
+
+# initialize temporary variables
+sub _init {
+    %loop     = ();
+    $cur_loop = undef;
+    $data     = $_[1] || {};
+}
+
+sub _enter_loop {
+    $cur_loop = $loop{ $_[1] } ||= {
+        name  => $_[0],
+        id    => $_[1],
+        count => -1,
+    };
+    $cur_loop->{count}++;
+    $cur_loop->{var} = {};
+    $cur_loop->{pos} = {};
+}
+
+sub _leave_loop {
+    my ( $obj, $key, $vars ) = @_;
+
+    ref($obj) eq 'HASH' or return;
+    my $old = $obj->{$key} if exists $obj->{$key};
+    ref($old) eq 'ARRAY' or return;
+
+    print "Validate: [$old $key @$vars]\n" if $DEBUG;
+
+    my @new;
+
+  OUTER:
+    foreach my $entry (@$old) {
+        next unless %$entry;
+        foreach my $var (@$vars) {
+
+            # If it's a foreach, it needs to not match or match something.
+            if ( ref($var) ) {
+                next if !exists( $entry->{$$var} ) or @{ $entry->{$$var} };
+            }
+            else {
+                next if exists( $entry->{$var} );
+            }
+            next OUTER;    # failed!
+        }
+        push @new, $entry;
+    }
+
+    delete $_[0]{$key} unless @$old = @new;
+}
+
+sub _adjust {
+    my ( $obj, $val ) = ( shift, pop );
+
+    foreach my $var (@_) {
+        $obj = $obj->{$var} ||= {};
+    }
+    return ( $obj, $val );
+}
+
+sub _traverse {
+    my ( $obj, $val ) = ( shift, shift );
+
+    my $depth = -1;
+    while ( my $id = pop(@_) ) {
+        my $var = $loop{$id}{name};
+        my $index = $loop{ $_[-1] || $val }{count};
+        $obj = $obj->{$var}[$index] ||= {};
+    }
+    return $obj;
+}
+
+sub _ext {
+    my ( $var, $val, $num ) = splice( @_, 0, 3 );
+    my $obj = $data;
+
+    if (@_) {
+        print "Ext: [ $$val with $num on $-[$num]]\n" if ref($val) and $DEBUG;
+
+        # fetch current loop structure
+        my $cur = $loop{ $_[0] };
+
+        # if pos() changed, increment the iteration counter
+        $cur->{var}{$num}++
+          if ( ( $cur->{pos}{$num} ||= -1 ) != $-[$num] )
+          or ref $val and $$val eq 'leave_loop';
+
+        # remember pos()
+        $cur->{pos}{$num} = $-[$num];
+
+        my $iteration = $cur->{var}{$num} - 1;
+        $obj = _traverse( $data, @_ )->{ $cur->{name} }[$iteration] ||= {};
+    }
+
+    ( $obj, $var ) = _adjust( $obj, @$var );
+
+    if ( !ref($val) ) {
+        $obj->{$var} = $val;
+    }
+    elsif ( $$val eq 'leave_loop' ) {
+        _leave_loop( $obj, @$var );
+    }
+    else {
+        $obj->{$var} = $$$val;
+    }
+}
+
+1;
+
+__END__
 
 =head1 NAME
 
@@ -49,148 +180,38 @@ Constructor.  Currently takes no parameters.
 Applying C<$regex> on C<$document> and returning the resulting C<\%values>.
 This process does not make use of the Template Toolkit or any other modules.
 
-=cut
-
-sub new {
-    my $class = shift;
-    my $self = {};
-    return bless($self, $class);
-}
-
-sub run {
-    my ( $self, $regex, $document, $ext_data ) = @_;
-
-    $self->_init($ext_data);
-    
-    defined( $document )      or return undef;
-    defined( $regex )         or return undef;
-
-    {
-        use re 'eval';
-        return $data if $document =~ /$regex/s;
-    }
-
-    return undef;
-}
-
-# initialize temporary variables
-sub _init {
-    %loop     = ();
-    $cur_loop = undef;
-    $data     = $_[1] || {};
-}
-
-sub _enter_loop {
-    $cur_loop = $loop{ $_[1] } ||= {
-        name  => $_[0],
-        id    => $_[1],
-        count => -1,
-    };
-    $cur_loop->{count}++;
-    $cur_loop->{var} = {};
-    $cur_loop->{pos} = {};
-}
-
-sub _leave_loop {
-    my ($obj, $key, $vars) = @_;
-
-    ref($obj) eq 'HASH' or return;
-    my $old = $obj->{$key} if exists $obj->{$key};
-    ref($old) eq 'ARRAY' or return;
-
-    print "Validate: [$old $key @$vars]\n" if $DEBUG;
-
-    my @new;
-
-    OUTER:
-    foreach my $entry (@$old) {
-        next unless %$entry;
-        foreach my $var (@$vars) {
-            # If it's a foreach, it needs to not match or match something.
-            if (ref($var)) {
-                next if !exists($entry->{$$var}) or @{$entry->{$$var}};
-            }
-            else {
-                next if exists($entry->{$var});
-            }
-            next OUTER; # failed!
-        }
-        push @new, $entry;
-    }
-
-    delete $_[0]{$key} unless @$old = @new;
-}
-
-sub _adjust {
-    my ( $obj, $val ) = ( shift, pop );
-
-    foreach my $var (@_) {
-        $obj = $obj->{$var} ||= {};
-    }
-    return ( $obj, $val );
-}
-
-sub _traverse {
-    my ( $obj, $val ) = ( shift, shift );
-
-    my $depth = -1;
-    while (my $id = pop(@_)) {
-        my $var   = $loop{$id}{name};
-        my $index = $loop{$_[-1] || $val}{count};
-        $obj = $obj->{$var}[$index] ||= {};
-    }
-    return $obj;
-}
-
-sub _ext {
-    my ( $var, $val, $num ) = splice( @_, 0, 3 );
-    my $obj = $data;
-
-    if (@_) {
-        print "Ext: [ $$val with $num on $-[$num]]\n" if ref($val) and $DEBUG;
-
-        # fetch current loop structure
-        my $cur = $loop{ $_[0] };
-        # if pos() changed, increment the iteration counter
-        $cur->{var}{$num}++ if ( ( $cur->{pos}{$num} ||= -1 ) != $-[$num] )
-            or ref $val and $$val eq 'leave_loop';
-        # remember pos()
-        $cur->{pos}{$num} = $-[$num];
-
-        my $iteration = $cur->{var}{$num} - 1;
-        $obj = _traverse( $data, @_ )->{ $cur->{name} }[$iteration] ||= {};
-    }
-
-    ( $obj, $var ) = _adjust( $obj, @$var );
-
-    if (!ref($val)) {
-        $obj->{$var} = $val;
-    }
-    elsif ($$val eq 'leave_loop') {
-        _leave_loop($obj, @$var);
-    }
-    else {
-        $obj->{$var} = $$$val;
-    }
-}
-
-1;
-
 =head1 SEE ALSO
 
 L<Template::Extract>, L<Template::Extract::Compile>
 
 =head1 AUTHORS
 
-Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>
+Audrey Tang E<lt>cpan@audreyt.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2004, 2005 by Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>.
+Copyright 2004, 2005, 2007 by Audrey Tang E<lt>cpan@audreyt.orgE<gt>.
 
-This program is free software; you can redistribute it and/or 
-modify it under the same terms as Perl itself.
+This software is released under the MIT license cited below.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+=head2 The "MIT" License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
 
 =cut

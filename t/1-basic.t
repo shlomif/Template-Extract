@@ -1,13 +1,14 @@
 #!/usr/bin/perl
+
 use strict;
 use Test::More tests => 15;
 
 use_ok('Template::Extract');
 
-my ($template, $document, $data);
+my ( $template, $document, $data );
 
 my $obj = Template::Extract->new;
-isa_ok($obj, 'Template::Extract');
+isa_ok( $obj, 'Template::Extract' );
 
 $template = << '.';
 <ul>[% FOREACH record %]
@@ -24,21 +25,28 @@ this text is ignored.</li>
 this text is ignored, too.</li></ul>
 .
 
-$data = Template::Extract->new->extract($template, $document);
+$data = Template::Extract->new->extract( $template, $document );
 
-is_deeply($data, {
-    'record' => [ { 
-        'rating'    => 'A+',
-        'comment'   => 'nice',
-        'url'       => 'http://slashdot.org',
-        'title'     => 'News for nerds.',
-    }, {
-        'rating'    => 'Z!',
-        'comment'   => 'yeah',
-        'url'       => 'http://microsoft.com',
-        'title'     => 'Where do you want...',
-    } ]
-}, 'synopsis');
+is_deeply(
+    $data,
+    {
+        'record' => [
+            {
+                'rating'  => 'A+',
+                'comment' => 'nice',
+                'url'     => 'http://slashdot.org',
+                'title'   => 'News for nerds.',
+            },
+            {
+                'rating'  => 'Z!',
+                'comment' => 'yeah',
+                'url'     => 'http://microsoft.com',
+                'title'   => 'Where do you want...',
+            }
+        ]
+    },
+    'synopsis'
+);
 
 $template = << '.';
 <!-- BEGIN -->
@@ -56,11 +64,13 @@ $document = << '.';
 <!-- END -->
 .
 
-$data = Template::Extract->new->extract($template, $document);
+$data = Template::Extract->new->extract( $template, $document );
 
-is_deeply($data, {
-    record => [ map { { para => $_ } } 'hello', 'world', ', how are you?' ]
-}, 'implicit newlines with regex tags');
+is_deeply(
+    $data,
+    { record => [ map { { para => $_ } } 'hello', 'world', ', how are you?' ] },
+    'implicit newlines with regex tags'
+);
 
 $template = << '.';
 [% FOREACH subject %]
@@ -94,30 +104,43 @@ this text is ignored, too.</li></ul>
 this text is ignored, also.</li></ol>
 .
 
-$data = Template::Extract->new->extract($template, $document);
+$data = Template::Extract->new->extract( $template, $document );
 
-is_deeply($data, {
-    'record' => [ { 
-        'rating'    => '+++++',
-        'comment'   => 'cool',
-        'url'       => 'http://cpan.org',
-        'title'     => 'CPAN.',
-    } ],
-    'subject' => [map { {
-        'sub' => { 'heading' => $_ },
-        'record' => [ { 
-            'rating'    => 'A+',
-            'comment'   => 'nice',
-            'url'       => 'http://slashdot.org',
-            'title'     => 'News for nerds.',
-        }, {
-            'rating'    => 'Z!',
-            'comment'   => 'yeah',
-            'url'       => 'http://microsoft.com',
-            'title'     => 'Where do you want...',
-        } ]
-    } } qw(Foo Bar)],
-}, 'two nested and one extra FOREACH');
+is_deeply(
+    $data,
+    {
+        'record' => [
+            {
+                'rating'  => '+++++',
+                'comment' => 'cool',
+                'url'     => 'http://cpan.org',
+                'title'   => 'CPAN.',
+            }
+        ],
+        'subject' => [
+            map {
+                {
+                    'sub'    => { 'heading' => $_ },
+                    'record' => [
+                        {
+                            'rating'  => 'A+',
+                            'comment' => 'nice',
+                            'url'     => 'http://slashdot.org',
+                            'title'   => 'News for nerds.',
+                        },
+                        {
+                            'rating'  => 'Z!',
+                            'comment' => 'yeah',
+                            'url'     => 'http://microsoft.com',
+                            'title'   => 'Where do you want...',
+                        }
+                    ]
+                }
+              } qw(Foo Bar)
+        ],
+    },
+    'two nested and one extra FOREACH'
+);
 
 $template = << '.';
 _[% C %][% D %]_
@@ -131,25 +154,33 @@ _rayme_
 _meraydoe_
 .
 
-$data = Template::Extract->new->extract($template, $document);
+$data = Template::Extract->new->extract( $template, $document );
 
-is_deeply($data, {
-    'C' => 'doe',
-    'D' => 'ray',
-    'E' => 'me',
-}, 'backtracking');
+is_deeply(
+    $data,
+    {
+        'C' => 'doe',
+        'D' => 'ray',
+        'E' => 'me',
+    },
+    'backtracking'
+);
 
 my $ext_data = { F => 'fa' };
-$data = Template::Extract->new->extract($template, $document, $ext_data);
+$data = Template::Extract->new->extract( $template, $document, $ext_data );
 
-is_deeply($data, {
-    'C' => 'doe',
-    'D' => 'ray',
-    'E' => 'me',
-    'F' => 'fa',
-}, 'external data');
+is_deeply(
+    $data,
+    {
+        'C' => 'doe',
+        'D' => 'ray',
+        'E' => 'me',
+        'F' => 'fa',
+    },
+    'external data'
+);
 
-is_deeply($data, $ext_data, 'ext_data should be the same as data');
+is_deeply( $data, $ext_data, 'ext_data should be the same as data' );
 
 $template = << '.';
 [% FOREACH entry %]
@@ -168,25 +199,31 @@ $document = << '.';
 
 $data = Template::Extract->new->extract( $template, $document );
 
-is_deeply($data, {
-    'entry' => [ { 
-        'comment'   => [ {
-            'comment_text' => '1 Comment',
-            'sub' => { 'comment' => 1 },
-        } ],
-        'content'   => 'xxx',
-        'title'   => [ {
-            'title_text' => 'Title 1',
-        }, {
-            'title_text' => 'Title 1.a',
-        } ],
-    }, {
-        'content'   => 'foo',
-        'title'   => [ {
-            'title_text' => 'Title 2',
-        } ],
-    } ],
-}, 'two FOREACHs nested inside a FOREACH');
+is_deeply(
+    $data,
+    {
+        'entry' => [
+            {
+                'comment' => [
+                    {
+                        'comment_text' => '1 Comment',
+                        'sub'          => { 'comment' => 1 },
+                    }
+                ],
+                'content' => 'xxx',
+                'title'   => [
+                    { 'title_text' => 'Title 1', },
+                    { 'title_text' => 'Title 1.a', }
+                ],
+            },
+            {
+                'content' => 'foo',
+                'title'   => [ { 'title_text' => 'Title 2', } ],
+            }
+        ],
+    },
+    'two FOREACHs nested inside a FOREACH'
+);
 
 $template = << '.';
 [% FOREACH top %][% FOREACH foo %][% SET bar.x = "set" %]<[% baz.y %]|[% qux.z %]>[% END %][% END %]
@@ -196,45 +233,64 @@ $document = << '.';
 <test1|1><test2|2><test3
 .
 
-$data = Template::Extract->new->extract($template, $document);
+$data = Template::Extract->new->extract( $template, $document );
 
-is_deeply($data, { top => [{ foo => [{
-    bar => { x => 'set' },
-    baz => { y => 'test1' },
-    qux => { z => '1' },
-}, {
-    bar => { x => 'set' },
-    baz => { y => 'test2' },
-    qux => { z => '2' },
-}] }] }, 'SET directive inside two FOREACHs');
+is_deeply(
+    $data,
+    {
+        top => [
+            {
+                foo => [
+                    {
+                        bar => { x => 'set' },
+                        baz => { y => 'test1' },
+                        qux => { z => '1' },
+                    },
+                    {
+                        bar => { x => 'set' },
+                        baz => { y => 'test2' },
+                        qux => { z => '2' },
+                    }
+                ]
+            }
+        ]
+    },
+    'SET directive inside two FOREACHs'
+);
 
 $template = "[% FOREACH item %]hello [% foo %]<br>[% END %]";
 $document = " hello name<br>";
 
-$data = Template::Extract->new->extract($template, $document);
+$data = Template::Extract->new->extract( $template, $document );
 
-is_deeply($data, { item => [ { foo => 'name' } ] }, 'extra prepended data');
+is_deeply( $data, { item => [ { foo => 'name' } ] }, 'extra prepended data' );
 
 $Template::Extract::EXACT = 1;
-$data = Template::Extract->new->extract($template, $document);
+$data = Template::Extract->new->extract( $template, $document );
 
-is($data, undef, 'partial match when $EXACT == 1 should fail');
+is( $data, undef, 'partial match when $EXACT == 1 should fail' );
 
 $Template::Extract::EXACT = 0;
 
 $template = '[% year %]-[% month %]-[% day %]';
 $document = '2004-12-17';
 
-$data = Template::Extract->new->extract($template, $document);
+$data = Template::Extract->new->extract( $template, $document );
 
-is_deeply($data, { year => 2004, month => 12, day => 17 }, 'trailing match');
+is_deeply( $data, { year => 2004, month => 12, day => 17 }, 'trailing match' );
 
 $template = '<%year>-<%month>-<%day>';
 $document = '2004-12-17';
 
-$data = Template::Extract->new({TAG_STYLE => 'mason'})->extract($template, $document);
+$data =
+  Template::Extract->new( { TAG_STYLE => 'mason' } )
+  ->extract( $template, $document );
 
-is_deeply($data, { year => 2004, month => 12, day => 17 }, 'change of TAG_STYLE');
+is_deeply(
+    $data,
+    { year => 2004, month => 12, day => 17 },
+    'change of TAG_STYLE'
+);
 
 $document = << '.';
 <h2></h2>
@@ -243,6 +299,6 @@ $document = << '.';
 
 $template = '<h2>[% d =~ /((?!<h2|<\/h2).+?)/ %]</h2>';
 
-$data = Template::Extract->new->extract($template, $document);
+$data = Template::Extract->new->extract( $template, $document );
 
-is_deeply($data, { d => 'hello' }, 'capturing regex');
+is_deeply( $data, { d => 'hello' }, 'capturing regex' );

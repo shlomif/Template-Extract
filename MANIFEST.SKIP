@@ -1,9 +1,0 @@
-#defaults
-^Build$
-^_build/
-^MANIFEST.bak$
-^Makefile$
-^Makefile.old$
-^blib/
-^pm_to_blib$
-^blibdirs$

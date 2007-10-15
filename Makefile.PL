@@ -1,18 +1,15 @@
 #!/usr/bin/env perl
+
 use 5.006;
+use strict;
 use inc::Module::Install;
 
-author		('Autrijus Tang <autrijus@autrijus.org>');
-name		('Template-Extract');
-abstract	('Use TT2 syntax to extract data from documents');
-version_from	('lib/Template/Extract.pm');
-license		('perl');
+name            'Template-Extract';
+all_from        'lib/Template/Extract.pm';
+requires        Template    => '2.00';
 
-requires	(
-    perl	=> 5.006,
-    Template	=> 2.00,
-);
-build_requires	('Test::More');
+build_requires  'Test::More';
+auto_include_deps;
 
-auto_include_deps();
-WriteAll( sign => 1 );
+auto_provides;
+sign; WriteAll;

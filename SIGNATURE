@@ -1,12 +1,12 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.41.
+signed via the Module::Signature module, version 0.55.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
 
     % cpansign -v
 
-It would check each file's integrity, as well as the signature's
+It will check each file's integrity, as well as the signature's
 validity.  If "==> Signature verified OK! <==" is not displayed,
 the distribution may already have been compromised, and you should
 not run its Makefile.PL or Build.PL.
@@ -14,34 +14,33 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 4853095f9e5a7f38fdd4754716d9bbe7e690363f Build.PL
-SHA1 e7a72f9b2b127cc588952de83ce10df621e98a92 Changes
-SHA1 17747b9778535dc590a8356d034b2fe15b25d61a MANIFEST
-SHA1 a169e41d988b079714734e122cef9ec103e4c0a1 MANIFEST.SKIP
-SHA1 1780b02b94c6390ef2638ed6081fd7bed6738226 META.yml
-SHA1 97d0a9bfbee319839cef08f55d82afa971028060 Makefile.PL
-SHA1 24fc45a269e415dac531633d9190f5b78f30809c README
-SHA1 19e565da4e1516f3e722d54142e715eae98b6fd9 inc/Module/Install.pm
-SHA1 a7f7e2bfb0ac6f8ad965832ef3a246a7bd433058 inc/Module/Install/Base.pm
-SHA1 4af7a9024ce3ee6ffb7ed33e2b2b3dc34cbad30b inc/Module/Install/Build.pm
-SHA1 7b0e82ea99187c2121bfc8fe590de8363e8100d7 inc/Module/Install/Can.pm
-SHA1 d097dedadac0edcafbee3a14c262e24089f5795e inc/Module/Install/Fetch.pm
-SHA1 08bfc9e53d1e15f5556c9d282a7db70a68b9ff06 inc/Module/Install/Include.pm
-SHA1 69b187644e08b73ab9ffbcb61ee51291e693685f inc/Module/Install/Makefile.pm
-SHA1 7298762404963528a5abcb0fa76cfe12afb9b87c inc/Module/Install/Metadata.pm
-SHA1 8ee248d67d4c61a4f01e6a96c41afbd93be4c9ef inc/Module/Install/Win32.pm
-SHA1 3c099dd7fb73a49bcc489b152c3ca3c7a1b36427 inc/Module/Install/WriteAll.pm
-SHA1 9d135b52aef905c9b23bb1ead96ca8a48dd6cb82 inc/Test/Builder.pm
-SHA1 0b38d0a7e1db5f84cd3c8b9716cd8c5fc1b35ef2 inc/Test/More.pm
-SHA1 d0af8d1341dcd0d7846408172ad312140c86803f lib/Template/Extract.pm
-SHA1 b781f76c2d003d0915afeff4b786b43fca46d96f lib/Template/Extract/Compile.pm
-SHA1 c646c2799abe9d88fb0a66bb5fe6f59c8f37a8c2 lib/Template/Extract/Parser.pm
-SHA1 2f58884baffe4ed1a162c43be285fef502f0f99b lib/Template/Extract/Run.pm
-SHA1 487cbbe512b38608c0d4f256d11524fe1953323a t/1-basic.t
+SHA1 13009930729ef806bd1d8eb740a9445039de3ea1 Changes
+SHA1 9ca7bd4200a35de719d3959ac64c92963eecdecc MANIFEST
+SHA1 7991534a376c5bcbfad1b2186c5bf9ad34639884 META.yml
+SHA1 5ce80b33376ea0f9485bc0d24b3dcbddc6900944 Makefile.PL
+SHA1 1289261b5d3d0c9359937dc505e7da0e4c00ced4 README
+SHA1 78edb89a439463e44c33a72bbee84c54d0dc8aaf inc/Module/Install.pm
+SHA1 8ea4e37df83fd0c1c050be5c8da75545c3828d9b inc/Module/Install/Base.pm
+SHA1 1da6031583c32f0d1ec073b8376102fc51427dcc inc/Module/Install/Can.pm
+SHA1 b779375b90c16af2f31f38a1dd2b5df223c7f2fb inc/Module/Install/Fetch.pm
+SHA1 6bf0d0d100b94d1a2ce64d010c8813dec26ac480 inc/Module/Install/Include.pm
+SHA1 2054450e1e9c1dd8056362bf4a64ae70d5d71476 inc/Module/Install/Makefile.pm
+SHA1 5d6189b2cad15cf9932a28faafd55130c8247e83 inc/Module/Install/Metadata.pm
+SHA1 02af973fae2ac3531fa6b704574b2b8cb2a08148 inc/Module/Install/Win32.pm
+SHA1 3a2eab96e91cca8d99938cda7791759ae9d97b3a inc/Module/Install/WriteAll.pm
+SHA1 6ee3ac34f31857536dd77852e4dd4e21e5743607 inc/Test/Builder.pm
+SHA1 9ceb21c6c29c6857f63ddfa580cedb776e7d403d inc/Test/Builder/Module.pm
+SHA1 0fc9342c11d50218dfa2a71aee7443af26c99177 inc/Test/More.pm
+SHA1 5601690560b44e4fd3101291320ab420543c589e lib/Template/Extract.pm
+SHA1 57662bcc783ef59ecada059ef5de7929bf760a77 lib/Template/Extract/Compile.pm
+SHA1 9d0eced5555ce1746a3ee591a22836c61542e977 lib/Template/Extract/Parser.pm
+SHA1 e462276ec91bf6244d2f9afc69f0d942be8ee260 lib/Template/Extract/Run.pm
+SHA1 41afe2c04bb573b40e283e2b210ed70a47a3f8ba t/0-signature.t
+SHA1 bb2da0bbdfbf9b74ec1dc84555423193e378f8e0 t/1-basic.t
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (FreeBSD)
+Version: GnuPG v1.4.3 (Darwin)
 
-iD8DBQFDKyV5tLPdNzw1AaARArDqAJ9E2PH6/CJp0qbI8bIrzGdX3QreGACfczl3
-silhiAs6bZyveWkx0YTH7Hk=
-=/m6d
+iD8DBQFHE6lgtLPdNzw1AaARAh+oAJ9Wtm/ZpM1EHdogfwBaGnMEdKy8WwCguV9w
+sECVYRbtwH89s86vbkpPJ7k=
+=Te7D
 -----END PGP SIGNATURE-----

@@ -1,5 +1,5 @@
 package Template::Extract::Compile;
-$Template::Extract::Compile::VERSION = '0.40';
+$Template::Extract::Compile::VERSION = '0.41';
 
 use 5.006;
 use strict;
@@ -8,47 +8,10 @@ use warnings;
 our ( $DEBUG, $EXACT );
 my ( $paren_id, $block_id );
 
-=head1 NAME
-
-Template::Extract::Compile - Compile TT2 templates into regular expressions
-
-=head1 SYNOPSIS
-
-    use Template::Extract::Compile;
-
-    my $template = << '.';
-    <ul>[% FOREACH record %]
-    <li><A HREF="[% url %]">[% title %]</A>: [% rate %] - [% comment %].
-    [% ... %]
-    [% END %]</ul>
-    .
-    my $regex = Template::Extract::Compile->new->compile($template);
-
-    open FH, '>', 'stored_regex' or die $!;
-    print FH $regex;
-    close FH;
-
-=head1 DESCRIPTION
-
-This module utilizes B<Template::Parser> to transform a TT2 template into
-a regular expression suitable for the B<Template::Extract::Run> module.
-
-=head1 METHODS
-
-=head2 new()
-
-Constructor.  Currently takes no parameters.
-
-=head2 compile($template)
-
-Returns the regular expression compiled from C<$template>.
-
-=cut
-
 sub new {
     my $class = shift;
-    my $self = {};
-    return bless($self, $class);
+    my $self  = {};
+    return bless( $self, $class );
 }
 
 sub compile {
@@ -78,7 +41,6 @@ sub _init {
     $paren_id = 0;
     $block_id = 0;
 }
-
 
 # utility function to add regex eval brackets
 sub _re { "(?{\n    @_\n})" }
@@ -131,9 +93,8 @@ sub foreach {
     my $regex = $_[4];
 
     # find out immediate children
-    my %vars = reverse (
-        $regex =~ /_ext\(\(\[(\[?)('\w+').*?\], [^,]+, \d+\)\*\*/g
-    );
+    my %vars =
+      reverse( $regex =~ /_ext\(\(\[(\[?)('\w+').*?\], [^,]+, \d+\)\*\*/g );
     my $vars = join( ',', map { $vars{$_} ? "\\$_" : $_ } sort keys %vars );
 
     # append this block's id into the _get calling chain
@@ -143,14 +104,18 @@ sub foreach {
     $regex =~ s/\+\+/*/g;
 
     return (
+
         # sets $cur_loop
         _re("_enter_loop($_[2], $block_id)") .
-        # match loop content
-        "(?:\\n*?$regex)++()" .
-        # weed out partial matches
-        _re("_ext(([[$_[2],[$vars]]], \\'leave_loop', $paren_id)**)") .
-        # optional, implicit newline
-        "\\n*?"
+
+          # match loop content
+          "(?:\\n*?$regex)++()" .
+
+          # weed out partial matches
+          _re("_ext(([[$_[2],[$vars]]], \\'leave_loop', $paren_id)**)") .
+
+          # optional, implicit newline
+          "\\n*?"
     );
 }
 
@@ -168,7 +133,7 @@ sub set {
 
     ++$paren_id;
 
-    if ($_[1][1] =~ m|^/(.*)/$|) {
+    if ( $_[1][1] =~ m|^/(.*)/$| ) {
         $regex = $1;
     }
 
@@ -176,15 +141,13 @@ sub set {
     $val =~ s/^'(.*)'\z/$1/;
     $val = quotemeta($val);
 
-    my $parents = join(
-        ',', map {
-            $_[1][0][ $_ * 2 ]
-        } ( 0 .. $#{ $_[1][0] } / 2 )
-    );
+    my $parents =
+      join( ',', map { $_[1][0][ $_ * 2 ] } ( 0 .. $#{ $_[1][0] } / 2 ) );
 
-    if (defined($regex)) {
+    if ( defined($regex) ) {
         return $1 . _re("_ext(([$parents], \$$paren_id, $paren_id)\*\*)");
-    } else {
+    }
+    else {
         return '()' . _re("_ext(([$parents], \\\\'$val', $paren_id)\*\*)");
     }
 }
@@ -195,7 +158,7 @@ sub textblock {
 
 sub block {
     my $rv = '';
-    foreach my $chunk ( map "$_", @{$_[1]||[]} ) {
+    foreach my $chunk ( map "$_", @{ $_[1] || [] } ) {
         $chunk =~ s/^#line .*\n//;
         $rv .= $chunk;
     }
@@ -248,21 +211,75 @@ sub AUTOLOAD {
 
 1;
 
+__END__
+
+=head1 NAME
+
+Template::Extract::Compile - Compile TT2 templates into regular expressions
+
+=head1 SYNOPSIS
+
+    use Template::Extract::Compile;
+
+    my $template = << '.';
+    <ul>[% FOREACH record %]
+    <li><A HREF="[% url %]">[% title %]</A>: [% rate %] - [% comment %].
+    [% ... %]
+    [% END %]</ul>
+    .
+    my $regex = Template::Extract::Compile->new->compile($template);
+
+    open FH, '>', 'stored_regex' or die $!;
+    print FH $regex;
+    close FH;
+
+=head1 DESCRIPTION
+
+This module utilizes B<Template::Parser> to transform a TT2 template into
+a regular expression suitable for the B<Template::Extract::Run> module.
+
+=head1 METHODS
+
+=head2 new()
+
+Constructor.  Currently takes no parameters.
+
+=head2 compile($template)
+
+Returns the regular expression compiled from C<$template>.
+
 =head1 SEE ALSO
 
 L<Template::Extract>, L<Template::Extract::Run>
 
 =head1 AUTHORS
 
-Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>
+Audrey Tang E<lt>cpan@audreyt.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2004, 2005 by Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>.
+Copyright 2004, 2005, 2007 by Audrey Tang E<lt>cpan@audreyt.orgE<gt>.
 
-This program is free software; you can redistribute it and/or 
-modify it under the same terms as Perl itself.
+This software is released under the MIT license cited below.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+=head2 The "MIT" License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
 
 =cut

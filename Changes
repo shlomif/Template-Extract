@@ -1,3 +1,10 @@
+[Changes for 0.41 - 2007-10-16]
+
+* LICENSING CHANGE: This compilation and all individual files in it
+  are now under the permissive "MIT" license.
+
+* Tidied up source code and test files.
+
 [Changes for 0.40 - 2005-09-17]
 
 * Support for capturing matched regular expressions into variables,
