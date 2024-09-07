@@ -1,9 +1,8 @@
 package Template::Extract::Run;
-$Template::Extract::Run::VERSION = '0.41';
 
-use 5.006;
 use strict;
 use warnings;
+use 5.006;
 
 our ($DEBUG);
 my ( %loop, $cur_loop, $data );
@@ -18,6 +17,7 @@ sub run {
     my ( $self, $regex, $document, $ext_data ) = @_;
 
     $self->_init($ext_data);
+    ## no critic
 
     defined($document) or return undef;
     defined($regex)    or return undef;
@@ -52,7 +52,10 @@ sub _leave_loop {
     my ( $obj, $key, $vars ) = @_;
 
     ref($obj) eq 'HASH' or return;
-    my $old = $obj->{$key} if exists $obj->{$key};
+    my $old;
+    if (exists $obj->{$key}) {
+        $old = $obj->{$key};
+    }
     ref($old) eq 'ARRAY' or return;
 
     print "Validate: [$old $key @$vars]\n" if $DEBUG;

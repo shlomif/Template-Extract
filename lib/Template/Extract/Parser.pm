@@ -1,10 +1,9 @@
 package Template::Extract::Parser;
-$Template::Extract::Parser::VERSION = '0.41';
 
-use 5.006;
 use strict;
 use warnings;
-use base 'Template::Parser';
+use 5.006;
+use parent 'Template::Parser';
 
 sub new {
     my $class = shift;

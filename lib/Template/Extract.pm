@@ -1,9 +1,8 @@
 package Template::Extract;
-$Template::Extract::VERSION = '0.41';
 
-use 5.006;
 use strict;
 use warnings;
+use 5.006;
 use constant RUN_CLASS     => ( __PACKAGE__ . '::Run' );
 use constant COMPILE_CLASS => ( __PACKAGE__ . '::Compile' );
 use constant PARSER_CLASS  => ( __PACKAGE__ . '::Parser' );
@@ -19,6 +18,7 @@ sub new {
     my $parser_class  = $class->PARSER_CLASS;
 
     foreach my $subclass ( $run_class, $compile_class, $parser_class ) {
+        ## no critic
         no strict 'refs';
         $class->load($subclass);
         *{"$subclass\::DEBUG"} = *DEBUG;
@@ -38,6 +38,7 @@ sub new {
 sub load {
     my ( $self, $class ) = @_;
     $class =~ s{::}{/}g;
+    ## no critic
     require "$class.pm";
 }
 

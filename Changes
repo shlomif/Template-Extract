@@ -1,3 +1,9 @@
+[Changes for 0.50 - 2024-09-07]
+
+* Hopefully fix the CPAN installation in bleadperl after removing singlequote as a
+  package separator
+  https://rt.cpan.org/Ticket/Display.html?id=155310
+
 [Changes for 0.41 - 2007-10-16]
 
 * LICENSING CHANGE: This compilation and all individual files in it

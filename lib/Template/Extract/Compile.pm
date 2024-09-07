@@ -1,11 +1,12 @@
 package Template::Extract::Compile;
-$Template::Extract::Compile::VERSION = '0.41';
 
-use 5.006;
 use strict;
 use warnings;
+use 5.006;
 
-our ( $DEBUG, $EXACT );
+our ( $DEBUG,  );
+our $EXACT = undef();
+
 my ( $paren_id, $block_id );
 
 sub new {
@@ -33,6 +34,7 @@ sub compile {
 
         return $parser->parse($template)->{BLOCK};
     }
+    ## no critic
     return undef;
 }
 
@@ -52,7 +54,10 @@ sub template {
 
     $regex =~ s/\*\*//g;
     $regex =~ s/\+\+/+/g;
-    $regex = "^$regex\$" if $EXACT;
+    if ($EXACT)
+    {
+        $regex = "^$regex\$";
+    }
 
     # Deal with backtracking here -- substitute repeated occurences of
     # the variable into backtracking sequences like (\1)
