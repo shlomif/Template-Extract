@@ -1,147 +1,149 @@
-[Changes for 0.50 - 2024-09-08]
+Revision history for perl module Template::Extract
 
-* Hopefully fix the CPAN installation in bleadperl after removing singlequote as a
-  package separator
-  https://rt.cpan.org/Ticket/Display.html?id=155310
+0.50   2024-09-08
 
-* Add the ability to use a structured var (with "dots")
-  https://rt.cpan.org/Ticket/Display.html?id=46645
-  Thanks to LTHEGLER
+    * Hopefully fix the CPAN installation in bleadperl after removing singlequote as a
+      package separator
+      https://rt.cpan.org/Ticket/Display.html?id=155310
 
-[Changes for 0.41 - 2007-10-16]
+    * Add the ability to use a structured var (with "dots")
+      https://rt.cpan.org/Ticket/Display.html?id=46645
+      Thanks to LTHEGLER
 
-* LICENSING CHANGE: This compilation and all individual files in it
-  are now under the permissive "MIT" license.
+0.41   2007-10-16
 
-* Tidied up source code and test files.
+    * LICENSING CHANGE: This compilation and all individual files in it
+      are now under the permissive "MIT" license.
 
-[Changes for 0.40 - 2005-09-17]
+    * Tidied up source code and test files.
 
-* Support for capturing matched regular expressions into variables,
-  Contributed by "woremacx".  For example, this captures an nonempty
-  header text into the "heading" variable:
+0.40   2005-09-17
 
-    <h2>[% heading =~ /((?!<\/h2).+?)/ %]</h2>
+    * Support for capturing matched regular expressions into variables,
+      Contributed by "woremacx".  For example, this captures an nonempty
+      header text into the "heading" variable:
 
-[Changes for 0.39 - 2005-07-15]
+        <h2>[% heading =~ /((?!<\/h2).+?)/ %]</h2>
 
-* Allow passing Template::Parser options directly into
-  Template::Extract->new().  Suggested by brian d foy.
+0.39   2005-07-15
 
-* Factored out the parser into Template::Extract::Parser to
-  allow use of alternate parsers with the PARSE_CLASS class method.
+    * Allow passing Template::Parser options directly into
+      Template::Extract->new().  Suggested by brian d foy.
 
-[Changes for 0.38 - 2004-10-25]
+    * Factored out the parser into Template::Extract::Parser to
+      allow use of alternate parsers with the PARSE_CLASS class method.
 
-* Fix test failure with pre-5.8.4's regex optimizer.
-  Reported by CPAN testers.
+0.38   2004-10-25
 
-[Changes for 0.37 - 2004-10-20]
+    * Fix test failure with pre-5.8.4's regex optimizer.
+      Reported by CPAN testers.
 
-* Move under SVK for version management.
-* If the template ends with a capturing variable, make it
-  greedy instead of nongreedy, so it won't always match the
-  empty string.  Reported by LTJake on IRC.
+0.37   2004-10-20
 
-[Changes for 0.36 - 2004-02-16]
+    * Move under SVK for version management.
+    * If the template ends with a capturing variable, make it
+      greedy instead of nongreedy, so it won't always match the
+      empty string.  Reported by LTJake on IRC.
 
-* Separate the compilation and run parts into two
-  modules, for ease of deployment (::Run may be put
-  on a machine without TT2) and marginally faster
-  execution.  Suggested by Bruno De Fraine.
+0.36   2004-02-16
 
-[Changes for 0.35 - 2004-01-09]
+    * Separate the compilation and run parts into two
+      modules, for ease of deployment (::Run may be put
+      on a machine without TT2) and marginally faster
+      execution.  Suggested by Bruno De Fraine.
 
-* Fixes regression caused by newer TT2 versions,
-  which adds the extra "#line" directives into the
-  regular expressions.  Spotted by Yi-Ming Cao
-  and Sam Smith.
+0.35   2004-01-09
 
-* Implement suggestion from Luis Oliveira: embedded
-  non-capturing regexes, such as [% /\s*/ %].
+    * Fixes regression caused by newer TT2 versions,
+      which adds the extra "#line" directives into the
+      regular expressions.  Spotted by Yi-Ming Cao
+      and Sam Smith.
 
-* Add implicit optional newlines around [% FOREACH %]
-  blocks, so it can intuitively work.
+    * Implement suggestion from Luis Oliveira: embedded
+      non-capturing regexes, such as [% /\s*/ %].
 
-[Changes for 0.33 - 2003-12-13]
+    * Add implicit optional newlines around [% FOREACH %]
+      blocks, so it can intuitively work.
 
-* Adds MANIFEST.SKIP that takes care of Module::Build
-  files, so older versions of Module::Build/MakeMaker
-  won't trip Module::Signature over.  Thanks to CPAN
-  smoker Jost Krieger for the report.
+0.33   2003-12-13
 
-[Changes for 0.32 - 2003-12-13]
+    * Adds MANIFEST.SKIP that takes care of Module::Build
+      files, so older versions of Module::Build/MakeMaker
+      won't trip Module::Signature over.  Thanks to CPAN
+      smoker Jost Krieger for the report.
 
-* Improved build intrastructure, suggested by Mark Fowler,
-  to automatically check and download nmake.exe on Windows,
-  as well as supporting a Module::Build-compatible Build.PL.
+0.32   2003-12-13
 
-* Clarify documents; add links to Simon and Mark's articles.
+    * Improved build intrastructure, suggested by Mark Fowler,
+      to automatically check and download nmake.exe on Windows,
+      as well as supporting a Module::Build-compatible Build.PL.
 
-[Changes for 0.31 - 2003-10-21]
+    * Clarify documents; add links to Simon and Mark's articles.
 
-* New flag $EXACT to control whether partial documents
-  should match. (defaults to 0 for backward compatibility)
+0.31   2003-10-21
 
-* Tatsuhiko Miyagawa pointed out that [% FOREACH %] blocks
-  fail to match prematurely because it can match zero times.
-  Now outermost foreach blocks must match at least once.
+    * New flag $EXACT to control whether partial documents
+      should match. (defaults to 0 for backward compatibility)
 
-[Changes for 0.30 - 2003-10-20]
+    * Tatsuhiko Miyagawa pointed out that [% FOREACH %] blocks
+      fail to match prematurely because it can match zero times.
+      Now outermost foreach blocks must match at least once.
 
-* This module is no longer experimental. :)
-* Russell Matbouli reports that extract did not properly
-  set \%values.  Fixed.
-* [% SET key = "value" %] now works inside FOREACHs.
-* [% SET nested.key = "value" %] now works.
-* Much more robust validating code inside FOREACHs.
-* Refactored the common context walking code from "get",
-  "set" and "validate" into _ext, and improved readability.
+0.30   2003-10-20
 
-[Changes for 0.25 - 2003-09-06]
+    * This module is no longer experimental. :)
+    * Russell Matbouli reports that extract did not properly
+      set \%values.  Fixed.
+    * [% SET key = "value" %] now works inside FOREACHs.
+    * [% SET nested.key = "value" %] now works.
+    * Much more robust validating code inside FOREACHs.
+    * Refactored the common context walking code from "get",
+      "set" and "validate" into _ext, and improved readability.
 
-* Kate L Pugh pointed out the _enter_loop construct
-  was failing if there are more than one loops inside
-  another loop, because the loop counter of the first
-  loop inside was inadvertently reset to 0.  Fixed.
+0.25   2003-09-06
 
-[Changes for 0.24 - 2003-09-02]
+    * Kate L Pugh pointed out the _enter_loop construct
+      was failing if there are more than one loops inside
+      another loop, because the loop counter of the first
+      loop inside was inadvertently reset to 0.  Fixed.
 
-* Now Template::Generate is released, modify relevant PODs.
-* Unify nomenclature: ($data, $template, $document).
-* Some more style cleanup.
+0.24   2003-09-02
 
-[Changes for 0.23 - 2003-09-02]
+    * Now Template::Generate is released, modify relevant PODs.
+    * Unify nomenclature: ($data, $template, $document).
+    * Some more style cleanup.
 
-* No API changes, but seriously tidied up the internals.
+0.23   2003-09-02
 
-[Changes for 0.22 - 2003-09-01]
+    * No API changes, but seriously tidied up the internals.
 
-* Properly handles backtracking, so two [% var %]s are
-  guaranteed to match the same sequence.
-* Much more robust post-matching handlers, so the same variable
-  matched at the same location (but are of different length)
-  will not create a new item in the enclosing FOREACH array.
+0.22   2003-09-01
 
-[Changes for 0.21 - 2003-09-01]
+    * Properly handles backtracking, so two [% var %]s are
+      guaranteed to match the same sequence.
+    * Much more robust post-matching handlers, so the same variable
+      matched at the same location (but are of different length)
+      will not create a new item in the enclosing FOREACH array.
 
-* Oops, left debug statements and "use YAML" in.
+0.21   2003-09-01
 
-[Changes for 0.20 - 2003-08-31]
+    * Oops, left debug statements and "use YAML" in.
 
-* [% nested.variable.name %] now works.
-* Nested [% FOREACH %] blocks now work.
-* Much more robust and readable DEBUG output.
-* Commented the code somewhat so it's at least grokkable.
-* Allow [%...%], [%  ...  %], or any other combination of
-  \s characters (or lack thereof).
+0.20   2003-08-31
 
-[Changes for 0.11 - 2003-08-30]
+    * [% nested.variable.name %] now works.
+    * Nested [% FOREACH %] blocks now work.
+    * Much more robust and readable DEBUG output.
+    * Commented the code somewhat so it's at least grokkable.
+    * Allow [%...%], [%  ...  %], or any other combination of
+      \s characters (or lack thereof).
 
-* Fix typo, documentation, tabs, spelling, tests, etc...
+0.11   2003-08-30
 
-[Changes for 0.10 - 2003-08-30]
+    * Fix typo, documentation, tabs, spelling, tests, etc...
 
-* Add manifest.
-* Refactored, cleaned up template extractor.
+0.10   2003-08-30
+
+    * Add manifest.
+    * Refactored, cleaned up template extractor.
 
