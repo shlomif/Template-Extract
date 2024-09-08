@@ -1,8 +1,12 @@
-[Changes for 0.50 - 2024-09-07]
+[Changes for 0.50 - 2024-09-08]
 
 * Hopefully fix the CPAN installation in bleadperl after removing singlequote as a
   package separator
   https://rt.cpan.org/Ticket/Display.html?id=155310
+
+* Add the ability to use a structured var (with "dots")
+  https://rt.cpan.org/Ticket/Display.html?id=46645
+  Thanks to LTHEGLER
 
 [Changes for 0.41 - 2007-10-16]
 

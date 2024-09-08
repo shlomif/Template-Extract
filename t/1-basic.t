@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::More tests => 15;
+use Test::More tests => 16;
 
 # TEST
 use_ok('Template::Extract');
@@ -317,3 +317,15 @@ $data = Template::Extract->new->extract( $template, $document );
 
 # TEST
 is_deeply( $data, { d => 'hello' }, 'capturing regex' );
+
+$document = << '.';
+<p>hello</p>
+<p>42</p>
+.
+
+$template = '<p>[% a.b =~ /(\d+)/ %]</p>';
+
+$data = Template::Extract->new->extract( $template, $document );
+
+# TEST
+is_deeply( $data, { a => { b => '42' }}, 'structured var with capturing regex' );
